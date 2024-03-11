@@ -7,6 +7,7 @@ issue_tracker: https://github.com/fabio21/azure_ad_authentication/issues
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
