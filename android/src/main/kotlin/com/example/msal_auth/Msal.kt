@@ -51,8 +51,9 @@ class Msal(context: Context, internal var activity: FlutterActivity?) {
             override fun onSuccess(authenticationResult: IAuthenticationResult) {
                 Handler(Looper.getMainLooper()).post {
                     val accountMap = mutableMapOf<String, Any?>()
-                    accountMap["access_token"] = authenticationResult.accessToken
                     authenticationResult.account.claims?.let { accountMap.putAll(it) }
+                    accountMap["access_token"] = authenticationResult.accessToken
+                    accountMap["exp"] = authenticationResult.expiresOn.time
                     result.success(Gson().toJson(accountMap))
                 }
             }
@@ -83,8 +84,9 @@ class Msal(context: Context, internal var activity: FlutterActivity?) {
             override fun onSuccess(authenticationResult: IAuthenticationResult) {
                 Handler(Looper.getMainLooper()).post {
                     val accountMap = mutableMapOf<String, Any?>()
-                    accountMap["access_token"] = authenticationResult.accessToken
                     authenticationResult.account.claims?.let { accountMap.putAll(it) }
+                    accountMap["access_token"] = authenticationResult.accessToken
+                    accountMap["exp"] = authenticationResult.expiresOn.time
                     result.success(Gson().toJson(accountMap))
                 }
             }

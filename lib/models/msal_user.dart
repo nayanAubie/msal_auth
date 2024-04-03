@@ -3,7 +3,7 @@ class MsalUser {
   final String displayName;
   final String accessToken;
   final dynamic tokenCreatedAt;
-  final dynamic tokenExpiresOn;
+  final int tokenExpiresOn;
 
   MsalUser({
     required this.username,

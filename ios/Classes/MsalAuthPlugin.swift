@@ -40,6 +40,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         
         var accountMap = authResult.account.accountClaims ?? [String: Any]()
         accountMap["access_token"] = authResult.accessToken
+        accountMap["exp"] = Int(floor(authResult.expiresOn!.timeIntervalSince1970 * 1000.0))
         
         let signedInAccount = authResult.account
         self.currentAccountIdentifier = signedInAccount.homeAccountId?.identifier
