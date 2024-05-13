@@ -62,8 +62,7 @@ class MsalAuth {
   Future<MsalUser?> acquireToken() async {
     try {
       final arguments = <String, dynamic>{'scopes': _scopes};
-      final json =
-          await _methodChannel.invokeMethod('acquireToken', arguments);
+      final json = await _methodChannel.invokeMethod('acquireToken', arguments);
       if (json != null) {
         return MsalUser.fromJson(jsonDecode(json));
       }
