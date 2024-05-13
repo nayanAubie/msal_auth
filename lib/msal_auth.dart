@@ -47,6 +47,7 @@ class MsalAuth {
         arguments = <String, dynamic>{
           'clientId': clientId,
           'authority': iosConfig!.authority,
+          'authMiddleware': iosConfig.authMiddleware.name,
         };
       }
 
@@ -91,7 +92,7 @@ class MsalAuth {
     }
   }
 
-  /// clear user input data
+  /// Logout user from Microsoft account.
   Future<void> logout() async {
     try {
       if (Platform.isAndroid) {

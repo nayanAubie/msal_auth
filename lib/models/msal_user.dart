@@ -1,3 +1,4 @@
+/// Microsoft user details.
 class MsalUser {
   final String username;
   final String displayName;

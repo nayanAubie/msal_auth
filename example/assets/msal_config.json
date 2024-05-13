@@ -1,4 +1,5 @@
 {
+  "redirect_uri": "msauth://com.example.msal_auth_example/<BASE64_ENCODED_PACKAGE_SIGNATURE>",
   "authorities" : [
     {
       "type": "AAD",
@@ -10,9 +11,9 @@
       "default": true
     }
   ],
-  "authorization_user_agent": "WEBVIEW",
+  "authorization_user_agent": "BROWSER",
   "multiple_clouds_supported": false,
-  "broker_redirect_uri_registered": false,
+  "broker_redirect_uri_registered": true,
   "http": {
     "connect_timeout": 10000,
     "read_timeout": 30000
