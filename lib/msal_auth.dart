@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:msal_auth/msal_auth.dart';
 import 'package:path_provider/path_provider.dart';
+
+import 'msal_auth.dart';
 
 export 'core/extensions.dart';
 export 'models/models.dart';
@@ -61,7 +62,7 @@ class MsalAuth {
   Future<MsalUser?> acquireToken() async {
     try {
       final arguments = <String, dynamic>{'scopes': _scopes};
-      final String? json =
+      final json =
           await _methodChannel.invokeMethod('acquireToken', arguments);
       if (json != null) {
         return MsalUser.fromJson(jsonDecode(json));
@@ -80,7 +81,7 @@ class MsalAuth {
       if (Platform.isAndroid) {
         await _methodChannel.invokeMethod('loadAccounts');
       }
-      final String? json =
+      final json =
           await _methodChannel.invokeMethod('acquireTokenSilent', arguments);
       if (json != null) {
         return MsalUser.fromJson(jsonDecode(json));

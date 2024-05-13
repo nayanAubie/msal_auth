@@ -35,23 +35,17 @@ class _MyAppState extends State<MyApp> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ElevatedButton(
-              onPressed: () {
-                getToken();
-              },
+              onPressed: getToken,
               child: const Text('Get Token'),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
-                getTokenSilently();
-              },
+              onPressed: getTokenSilently,
               child: const Text('Get Token silent'),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
-                logout();
-              },
+              onPressed: logout,
               child: const Text('Logout'),
             ),
           ],
@@ -61,7 +55,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<MsalAuth> getMsalAuth() async {
-    return await MsalAuth.createPublicClientApplication(
+    return MsalAuth.createPublicClientApplication(
       clientId: _clientId,
       scopes: _scopes,
       androidConfig: AndroidConfig(configFilePath: 'assets/msal_config.json'),
