@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:msal_auth/msal_auth.dart';
+import '../msal_auth.dart';
 
 extension PlatformExceptionUtils on PlatformException {
   MsalException get msalException {
