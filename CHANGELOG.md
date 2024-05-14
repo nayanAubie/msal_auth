@@ -1,3 +1,7 @@
+## 1.0.7
+
+- Fixed `Dart Analysis` in model classes.
+
 ## 1.0.6
 
 - Added documentation for `How to setup app in Azure portal`.
