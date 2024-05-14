@@ -49,6 +49,8 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
   "broker_redirect_uri_registered": true
   ```
 
+  - If Authenticator app is not installed on a device, `authorization_user_agent` will be used as a auth middleware.
+
 - Authenticate using Browser
 
   ```JSON
@@ -135,6 +137,8 @@ final msalAuth = await MsalAuth.createPublicClientApplication(
   ),
 );
 ```
+
+- in `iOS`, if middleware is `AuthMiddleware.msAuthenticator` and `Authenticator` app is not installed on a device, It will use `Safari Browser` for authentication.
 
 ### Get Auth Token (Login to Microsoft account)
 
