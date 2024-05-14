@@ -1,3 +1,7 @@
+## 1.0.5
+
+- Added documentation for broker authentication.
+
 ## 1.0.4
 
 - Added documentation.
