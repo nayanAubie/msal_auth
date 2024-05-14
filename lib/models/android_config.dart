@@ -2,6 +2,7 @@
 class AndroidConfig {
   /// Asset path of JSON file.
   final String configFilePath;
+
   /// Microsoft tenant ID.
   final String? tenantId;
 
