@@ -18,6 +18,39 @@ Microsoft Authentication Library for Flutter.
 
 ---
 
+## Create an App in Azure Portal
+
+- First of all, You need to Sign up and create an app on [Azure Portal].
+- To create the app, Search for `App registrations`, click on it and go to `New registration`.
+- Fill the `Name` and select `Supported account types` and register it.
+- Your application is created now and you should see the `Application (client) ID` and `Directory (tenant) ID`. Those values are required in Dart code.
+
+  ![Azure Dashboard](/Screenshots/Azure-Dashboard.png)
+
+- Now You need to add `Android` and `iOS` platform specific configuration in Azure portal. to do that, go to `Manage > Authentication > Add platform`.
+  
+### Android Setup - Azure portal
+
+- For Android, You need to provide `package name` and release `signature hash`.
+  - To generate a signature hash in Flutter, use the below command:
+  
+    ```Bash
+    keytool -exportcert -alias androidreleasekey -keystore app/upload-keystore.jks | openssl sha1 -binary | openssl base64
+    ```
+
+  - Make sure you have release `keystore` file placed inside `/app` folder.
+  - Only one signature hash is required because it maps with `AndroidManifest.xml`.
+  
+### iOS Setup - Azure portal
+
+- For iOS, You need to provide only `Bundle ID`.
+
+  ![iOS Redirect URI](/Screenshots/iOS-Redirect-URI.png)
+
+That's it for the Azure portal configuration.
+
+---
+
 Please follow the platform configuration ⬇️ before jump to the `Dart` code.
 
 ## Android Configuration
@@ -34,12 +67,9 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
   "redirect_uri": "msauth://<APP_PACKAGE_NAME>/<BASE64_ENCODED_PACKAGE_SIGNATURE>",
   ```
 
-- Get `base64` encoded signature by following command:
-- Make sure you have release `keystore` file placed inside `/app` folder.
+- You can directly copy the `Redirect URI` from Azure portal.
 
-  ```Bash
-  keytool -exportcert -alias androidreleasekey -keystore app/upload-keystore.jks | openssl sha1 -binary | openssl base64
-  ```
+  ![Android Redirect URI](/Screenshots/Azure-Android-Redirect-URI.png)
 
 ### Setup authentication middleware (Optional)
 
@@ -168,6 +198,7 @@ if (msalUser.tokenExpiresOn <= DateTime.now().millisecondsSinceEpoch) {
 Follow [example] code for more details on implementation.
 
 
+[Azure Portal]: https://portal.azure.com/
 [Microsoft default configuration file]: https://learn.microsoft.com/en-in/entra/identity-platform/msal-configuration#the-default-msal-configuration-file
 [Microsoft Authenticator App]: https://play.google.com/store/apps/details?id=com.azure.authenticator
 [Android MSAL configuration]: https://learn.microsoft.com/en-in/entra/identity-platform/msal-configuration
