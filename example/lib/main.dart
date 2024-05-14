@@ -15,7 +15,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // * Legos
   final _clientId = '<CLIENT_ID>';
   final _authority =
       'https://login.microsoftonline.com/<TENANT_ID>/oauth2/v2.0/authorize';

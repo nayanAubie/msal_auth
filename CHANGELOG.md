@@ -1,3 +1,7 @@
+## 1.0.4
+
+- Added documentation.
+
 ## 1.0.3
 
 - Fixed `Dart Analysis`

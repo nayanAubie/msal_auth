@@ -6,6 +6,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     
     static var clientId : String = ""
     static var authority : String = ""
+    static var authMiddleware : String = ""
     
     static let kCurrentAccountIdentifier = "MSALCurrentAccountIdentifier"
     
@@ -24,9 +25,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         let scopes = dict["scopes"] as? [String] ?? [String]()
         let clientId = dict["clientId"] as? String ?? ""
         let authority = dict["authority"] as? String ?? ""
+        let authMiddleware = dict["authMiddleware"] as? String ?? ""
         
         switch( call.method ){
-        case "initialize": initialize(clientId: clientId, authority: authority, result: result)
+        case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, result: result)
         case "acquireToken": acquireToken(scopes: scopes, result: result)
         case "acquireTokenSilent": acquireTokenSilent(scopes: scopes, result: result)
         case "logout": logout(result: result)
@@ -58,9 +60,9 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         return nil
     }
     
-    private func initialize(clientId: String, authority: String, result: @escaping FlutterResult)
+    private func initialize(clientId: String, authority: String, authMiddleware: String, result: @escaping FlutterResult)
     {
-        //validate clientid exists
+        // validate clientId
         if(clientId.isEmpty){
             result(FlutterError(code:"AUTH_ERROR", message: "Call must include a clientId", details: nil))
             return
@@ -68,10 +70,12 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         
         MsalAuthPlugin.clientId = clientId;
         MsalAuthPlugin.authority = authority;
+        MsalAuthPlugin.authMiddleware = authMiddleware;
+        if (authMiddleware != "msAuthenticator") {
+            MSALGlobalConfig.brokerAvailability = .none
+        }
         result(true)
     }
-    
-    
 }
 //MARK: - Get token
 extension MsalAuthPlugin {
@@ -84,7 +88,7 @@ extension MsalAuthPlugin {
             let webViewParameters = MSALWebviewParameters(authPresentationViewController: viewController)
             if #available(iOS 13.0, *) {
                 webViewParameters.prefersEphemeralWebBrowserSession = true
-                webViewParameters.webviewType = MSALWebviewType.wkWebView
+                webViewParameters.webviewType = MsalAuthPlugin.authMiddleware != "webView" ? MSALWebviewType.safariViewController : MSALWebviewType.wkWebView
             }
             
             removeAccount(application)
