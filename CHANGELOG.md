@@ -1,3 +1,7 @@
+## 1.0.6
+
+- Added documentation for `How to setup app in Azure portal`.
+
 ## 1.0.5
 
 - Added documentation for broker authentication.
