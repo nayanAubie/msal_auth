@@ -1,10 +1,10 @@
 # MSAL Auth
 
-Microsoft Authentication Library for Flutter.
+Microsoft Authentication 🔐 Library for Flutter.
 
 `msal_auth` plugin provides Microsoft authentication in Android and iOS devices using native MSAL library. This is very straightforward and easy to use.
 
-## Features
+## Features 🚀
 
 - Option to set one of the following Middleware:
   - MS Authenticator App
@@ -17,6 +17,10 @@ Microsoft Authentication Library for Flutter.
 - Microsoft User information
 
 ---
+
+To implement `MSAL` in `Flutter`, You need to setup an app in `Azure Portal` and required some of the platform specific configurations.
+
+➡ Follow the step-by-step guide below ⬇️
 
 ## Create an App in Azure Portal
 
@@ -143,7 +147,7 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
 </array>
 ```
 
-## Code Implementation
+## Code Implementation 👨‍💻
 
 - This section contains writing `Dart` code to setup a `MSAL` application in `Flutter` and get auth token.
 

@@ -2,12 +2,16 @@
 class MsalUser {
   /// Usually, it's an email address.
   final String username;
+
   /// Full name registered in the Microsoft account.
   final String displayName;
+
   /// Authentication token.
   final String accessToken;
+
   /// Token created time.
   final dynamic tokenCreatedAt;
+
   /// Token expiration time in "MillisecondsSinceEpoch".
   final int tokenExpiresOn;
 
