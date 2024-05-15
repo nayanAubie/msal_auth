@@ -165,12 +165,13 @@ final msalAuth = await MsalAuth.createPublicClientApplication(
     tenantId: '<MICROSOFT_TENANT_ID (Optional)>',
   ),
   iosConfig: IosConfig(
-    authority: _authority,
+    authority: 'https://login.microsoftonline.com/<MICROSOFT_TENANT_ID>/oauth2/v2.0/authorize',
     // Change auth middleware if you need.
     authMiddleware: AuthMiddleware.msAuthenticator,
   ),
 );
 ```
+- To modify value of `authority` in `iOS`, follow [Configure iOS authority].
 
 - in `iOS`, if middleware is `AuthMiddleware.msAuthenticator` and `Authenticator` app is not installed on a device, It will use `Safari Browser` for authentication.
 
@@ -207,5 +208,6 @@ Follow [example] code for more details on implementation.
 [Microsoft Authenticator App]: https://play.google.com/store/apps/details?id=com.azure.authenticator
 [Android MSAL configuration]: https://learn.microsoft.com/en-in/entra/identity-platform/msal-configuration
 [Microsoft Authenticator]: https://apps.apple.com/us/app/microsoft-authenticator/id983156458
+[Configure iOS authority]: https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#change-the-default-authority
 [MSAL exceptions]: https://learn.microsoft.com/en-us/entra/msal/dotnet/advanced/exceptions/msal-error-handling
 [example]: https://pub.dev/packages/msal_auth/example

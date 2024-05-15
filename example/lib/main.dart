@@ -16,8 +16,9 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _clientId = '<CLIENT_ID>';
-  final _authority =
-      'https://login.microsoftonline.com/<TENANT_ID>/oauth2/v2.0/authorize';
+  final _tenantId = '<TENANT_ID>';
+  late final _authority =
+      'https://login.microsoftonline.com/$_tenantId/oauth2/v2.0/authorize';
   final _scopes = <String>[
     'https://graph.microsoft.com/user.read',
     // Add other scopes here if required.
@@ -59,7 +60,10 @@ class _MyAppState extends State<MyApp> {
     return MsalAuth.createPublicClientApplication(
       clientId: _clientId,
       scopes: _scopes,
-      androidConfig: AndroidConfig(configFilePath: 'assets/msal_config.json'),
+      androidConfig: AndroidConfig(
+        configFilePath: 'assets/msal_config.json',
+        tenantId: _tenantId,
+      ),
       iosConfig: IosConfig(authority: _authority),
     );
   }
