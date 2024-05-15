@@ -62,6 +62,7 @@ class MsalAuth {
   /// return [UserAdModel] contains user information but token and expiration date
   Future<MsalUser?> acquireToken() async {
     try {
+      assert(_scopes.isNotEmpty, 'Scopes can not be empty');
       final arguments = <String, dynamic>{'scopes': _scopes};
       final json = await _methodChannel.invokeMethod('acquireToken', arguments);
       if (json != null) {
@@ -76,6 +77,7 @@ class MsalAuth {
   /// Acquire a token silently, with no user interaction, for the given [scopes]
   /// return [UserAdModel] contains user information but token and expiration date
   Future<MsalUser?> acquireTokenSilent() async {
+    assert(_scopes.isNotEmpty, 'Scopes can not be empty');
     final arguments = <String, dynamic>{'scopes': _scopes};
     try {
       if (Platform.isAndroid) {

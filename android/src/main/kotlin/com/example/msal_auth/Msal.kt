@@ -37,11 +37,7 @@ class Msal(context: Context, internal var activity: FlutterActivity?) {
             }
 
             override fun onError(exception: MsalException?) {
-                result.error(
-                    "AUTH_ERROR",
-                    exception?.message,
-                    exception?.stackTrace
-                )
+                result.error("AUTH_ERROR", exception?.message, null)
             }
         }
     }
@@ -63,14 +59,18 @@ class Msal(context: Context, internal var activity: FlutterActivity?) {
                     result.error(
                         "AUTH_ERROR",
                         "Authentication failed ${exception.message}",
-                        exception.stackTrace
+                        null
                     )
                 }
             }
 
             override fun onCancel() {
                 Handler(Looper.getMainLooper()).post {
-                    result.error("USER_CANCELED", "User has cancelled the login process", null)
+                    result.error(
+                        "USER_CANCELED",
+                        "User has cancelled the login process",
+                        null
+                    )
                 }
             }
         }
@@ -94,15 +94,11 @@ class Msal(context: Context, internal var activity: FlutterActivity?) {
             override fun onError(exception: MsalException) {
                 when (exception) {
                     is MsalUiRequiredException -> {
-                        result.error(
-                            "UI_REQUIRED", exception.message, exception.stackTrace
-                        )
+                        result.error("UI_REQUIRED", exception.message, null)
                     }
 
                     else -> {
-                        result.error(
-                            "AUTH_ERROR", exception.message, exception.stackTrace
-                        )
+                        result.error("AUTH_ERROR", exception.message, null)
                     }
                 }
             }
@@ -124,7 +120,7 @@ class Msal(context: Context, internal var activity: FlutterActivity?) {
                 result.error(
                     "AUTH_ERROR",
                     "No account is available to acquire token silently for",
-                    exception.stackTrace
+                    null
                 )
             }
         })

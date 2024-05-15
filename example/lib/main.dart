@@ -67,6 +67,8 @@ class _MyAppState extends State<MyApp> {
       final msalAuth = await getMsalAuth();
       final user = await msalAuth.acquireToken();
       log('User data: ${user?.toJson()}');
+    } on MsalException catch (e) {
+      log('Msal exception with error: ${e.errorMessage}');
     } catch (e) {
       log(e.toString());
     }
@@ -77,6 +79,8 @@ class _MyAppState extends State<MyApp> {
       final msalAuth = await getMsalAuth();
       final user = await msalAuth.acquireTokenSilent();
       log('User data: ${user?.toJson()}');
+    } on MsalException catch (e) {
+      log('Msal exception with error: ${e.errorMessage}');
     } catch (e) {
       log(e.toString());
     }
@@ -86,6 +90,8 @@ class _MyAppState extends State<MyApp> {
     try {
       final msalAuth = await getMsalAuth();
       await msalAuth.logout();
+    } on MsalException catch (e) {
+      log('Msal exception with error: ${e.errorMessage}');
     } catch (e) {
       log(e.toString());
     }
