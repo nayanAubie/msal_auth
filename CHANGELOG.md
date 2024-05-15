@@ -1,3 +1,9 @@
+## 1.0.8
+
+- Fixed crash in Android when `MsalUiRequiredException` occurs.
+- Added info about `authority` used in iOS.
+- Updated `example` code.
+
 ## 1.0.7
 
 - Fixed `Dart Analysis` in model classes.

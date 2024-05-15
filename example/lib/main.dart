@@ -16,8 +16,9 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _clientId = '<CLIENT_ID>';
-  final _authority =
-      'https://login.microsoftonline.com/<TENANT_ID>/oauth2/v2.0/authorize';
+  final _tenantId = '<TENANT_ID>';
+  late final _authority =
+      'https://login.microsoftonline.com/$_tenantId/oauth2/v2.0/authorize';
   final _scopes = <String>[
     'https://graph.microsoft.com/user.read',
     // Add other scopes here if required.
@@ -28,26 +29,28 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('MSAL example app'),
         ),
-        body: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton(
-              onPressed: getToken,
-              child: const Text('Get Token'),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: getTokenSilently,
-              child: const Text('Get Token silent'),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: logout,
-              child: const Text('Logout'),
-            ),
-          ],
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: getToken,
+                child: const Text('Get Token'),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: getTokenSilently,
+                child: const Text('Get Token silent'),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: logout,
+                child: const Text('Logout'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -57,7 +60,10 @@ class _MyAppState extends State<MyApp> {
     return MsalAuth.createPublicClientApplication(
       clientId: _clientId,
       scopes: _scopes,
-      androidConfig: AndroidConfig(configFilePath: 'assets/msal_config.json'),
+      androidConfig: AndroidConfig(
+        configFilePath: 'assets/msal_config.json',
+        tenantId: _tenantId,
+      ),
       iosConfig: IosConfig(authority: _authority),
     );
   }
@@ -67,6 +73,8 @@ class _MyAppState extends State<MyApp> {
       final msalAuth = await getMsalAuth();
       final user = await msalAuth.acquireToken();
       log('User data: ${user?.toJson()}');
+    } on MsalException catch (e) {
+      log('Msal exception with error: ${e.errorMessage}');
     } catch (e) {
       log(e.toString());
     }
@@ -77,6 +85,8 @@ class _MyAppState extends State<MyApp> {
       final msalAuth = await getMsalAuth();
       final user = await msalAuth.acquireTokenSilent();
       log('User data: ${user?.toJson()}');
+    } on MsalException catch (e) {
+      log('Msal exception with error: ${e.errorMessage}');
     } catch (e) {
       log(e.toString());
     }
@@ -86,6 +96,8 @@ class _MyAppState extends State<MyApp> {
     try {
       final msalAuth = await getMsalAuth();
       await msalAuth.logout();
+    } on MsalException catch (e) {
+      log('Msal exception with error: ${e.errorMessage}');
     } catch (e) {
       log(e.toString());
     }
