@@ -28,26 +28,28 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('MSAL example app'),
         ),
-        body: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton(
-              onPressed: getToken,
-              child: const Text('Get Token'),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: getTokenSilently,
-              child: const Text('Get Token silent'),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: logout,
-              child: const Text('Logout'),
-            ),
-          ],
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: getToken,
+                child: const Text('Get Token'),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: getTokenSilently,
+                child: const Text('Get Token silent'),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: logout,
+                child: const Text('Logout'),
+              ),
+            ],
+          ),
         ),
       ),
     );
