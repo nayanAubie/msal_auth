@@ -6,9 +6,13 @@ class IosConfig {
   /// Middleware that is used to perform authentication.
   final AuthMiddleware authMiddleware;
 
+  /// The type of tenant to authenticate against.
+  final TenantType tenantType;
+
   IosConfig({
     required this.authority,
     this.authMiddleware = AuthMiddleware.msAuthenticator,
+    this.tenantType = TenantType.azureAD
   });
 }
 
@@ -22,4 +26,13 @@ enum AuthMiddleware {
 
   /// WebView will be used.
   webView
+}
+
+/// Types of tenant to authenticate against.
+enum TenantType {
+  /// Azure Active Directory.
+  azureAD,
+
+  /// Azure Active Directory B2C.
+  azureADB2C
 }

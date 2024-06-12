@@ -48,6 +48,7 @@ class MsalAuth {
           'clientId': clientId,
           'authority': iosConfig!.authority,
           'authMiddleware': iosConfig.authMiddleware.name,
+          'tenantType': iosConfig.tenantType
         };
       }
 

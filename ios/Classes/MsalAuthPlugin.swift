@@ -7,6 +7,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     static var clientId : String = ""
     static var authority : String = ""
     static var authMiddleware : String = ""
+    static var tenantType : String = ""
     
     static let kCurrentAccountIdentifier = "MSALCurrentAccountIdentifier"
     
@@ -26,9 +27,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         let clientId = dict["clientId"] as? String ?? ""
         let authority = dict["authority"] as? String ?? ""
         let authMiddleware = dict["authMiddleware"] as? String ?? ""
+        let tenantType = dict["tenantType"] as? String ?? ""
         
         switch( call.method ){
-        case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, result: result)
+        case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, tenantType: tenantType, result: result)
         case "acquireToken": acquireToken(scopes: scopes, result: result)
         case "acquireTokenSilent": acquireTokenSilent(scopes: scopes, result: result)
         case "logout": logout(result: result)
@@ -60,7 +62,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         return nil
     }
     
-    private func initialize(clientId: String, authority: String, authMiddleware: String, result: @escaping FlutterResult)
+    private func initialize(clientId: String, authority: String, authMiddleware: String, tenantType: String, result: @escaping FlutterResult)
     {
         // validate clientId
         if(clientId.isEmpty){
@@ -71,6 +73,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         MsalAuthPlugin.clientId = clientId;
         MsalAuthPlugin.authority = authority;
         MsalAuthPlugin.authMiddleware = authMiddleware;
+        MsalAuthPlugin.tenantType = tenantType;
         if (authMiddleware != "msAuthenticator") {
             MSALGlobalConfig.brokerAvailability = .none
         }
@@ -322,9 +325,25 @@ extension MsalAuthPlugin {
                     return nil
                 }
                 
-                //create the msal authority and configuration
-                let msalAuthority = try MSALAuthority(url: authorityUrl)
-                config = MSALPublicClientApplicationConfig(clientId: MsalAuthPlugin.clientId, redirectUri: nil, authority: msalAuthority)
+                //create the msal authority and configuration based on the tenant type
+                switch MsalAuthPlugin.tenantType {
+                    case "azureAD":
+                        let msalAuthority = try MSALAuthority(url: authorityUrl)
+                        config = MSALPublicClientApplicationConfig(clientId: MsalAuthPlugin.clientId, redirectUri: nil, authority: msalAuthority)
+                    case "azureADB2C":
+                        let msalB2CAuthority = try MSALB2CAuthority(url: authorityUrl)
+                        config = MSALPublicClientApplicationConfig(clientId: MsalAuthPlugin.clientId, redirectUri: nil, authority: msalB2CAuthority)
+                    default:
+                        result(FlutterError(code: "AUTH_ERROR", message: "invalid tenant type", details: nil))
+                        return nil
+                }
+
+                // To allow MSAL for iOS and macOS to authenticate against an Azure AD B2C tenant, its authority needs to be set as a "known authority".
+                // https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#b2c
+                if (MSALAuthPlugin.tenantType == "azureADB2C") {
+                    config.knownAuthorities = [msalAuthority];
+                }
+
             } catch {
                 //return error if exception occurs
                 result(FlutterError(code: "AUTH_ERROR", message: "invalid authority", details: nil))
