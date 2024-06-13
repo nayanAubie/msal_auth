@@ -12,7 +12,7 @@ class IosConfig {
   IosConfig({
     required this.authority,
     this.authMiddleware = AuthMiddleware.msAuthenticator,
-    this.tenantType = TenantType.azureAD
+    this.tenantType = TenantType.entraIDAndMicrosoftAccount
   });
 }
 
@@ -30,8 +30,8 @@ enum AuthMiddleware {
 
 /// Types of tenant to authenticate against.
 enum TenantType {
-  /// Azure Active Directory.
-  azureAD,
+  /// Entra ID (formerly Azure Active Directory) and Microsoft Account.
+  entraIDAndMicrosoftAccount,
 
   /// Azure Active Directory B2C.
   azureADB2C

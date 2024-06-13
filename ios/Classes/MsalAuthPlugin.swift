@@ -327,7 +327,7 @@ extension MsalAuthPlugin {
                 
                 //create the msal authority and configuration based on the tenant type
                 switch MsalAuthPlugin.tenantType {
-                    case "azureAD":
+                    case "entraIDAndMicrosoftAccount":
                         let msalAuthority = try MSALAuthority(url: authorityUrl)
                         config = MSALPublicClientApplicationConfig(clientId: MsalAuthPlugin.clientId, redirectUri: nil, authority: msalAuthority)
                     case "azureADB2C":
