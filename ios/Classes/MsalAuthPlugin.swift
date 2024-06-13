@@ -333,15 +333,12 @@ extension MsalAuthPlugin {
                     case "azureADB2C":
                         let msalB2CAuthority = try MSALB2CAuthority(url: authorityUrl)
                         config = MSALPublicClientApplicationConfig(clientId: MsalAuthPlugin.clientId, redirectUri: nil, authority: msalB2CAuthority)
+                        // To allow MSAL for iOS and macOS to authenticate against an Azure AD B2C tenant, its authority needs to be set as a "known authority".
+                        // https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#b2c
+                        config.knownAuthorities = [msalB2CAuthority];
                     default:
                         result(FlutterError(code: "AUTH_ERROR", message: "invalid tenant type", details: nil))
                         return nil
-                }
-
-                // To allow MSAL for iOS and macOS to authenticate against an Azure AD B2C tenant, its authority needs to be set as a "known authority".
-                // https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#b2c
-                if (MSALAuthPlugin.tenantType == "azureADB2C") {
-                    config.knownAuthorities = [msalAuthority];
                 }
 
             } catch {
