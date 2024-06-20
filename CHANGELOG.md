@@ -1,3 +1,7 @@
+## 2.0.0
+
+- Added support for authenticating against Azure AD B2C tenants on iOS.
+
 ## 1.0.8
 
 - Fixed crash in Android when `MsalUiRequiredException` occurs.
