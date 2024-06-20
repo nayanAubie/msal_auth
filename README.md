@@ -10,6 +10,7 @@ Microsoft Authentication 🔐 Library for Flutter.
   - MS Authenticator App
   - Browser
   - In-App WebView
+- Supports authentication against Entra ID (formerly Azure Active Directory)/Microsoft Account tenants as well as Azure Active Directory (AD) B2C tenants
 - Get auth token silently
 - Get auth token interactive
 - Logout
@@ -125,7 +126,9 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
 
 ## iOS Configuration
 
-- For iOS platform, only `Info.plist` need to be modified where you need to application's redirect URI scheme & `LSApplicationQueriesSchemes` to allow making call to [Microsoft Authenticator] if installed.
+- Add a new keychain group to your project capabilities. The keychain group should be `com.microsoft.adalcache`. [Configuring your project to use MSAL]
+
+- If you need to application's redirect URI scheme & `LSApplicationQueriesSchemes` to allow making calls to [Microsoft Authenticator] if installed, the below modifications will also be made to your `Info.plist` file. 
   
 ### `Info.plist` Modification
 
@@ -168,12 +171,15 @@ final msalAuth = await MsalAuth.createPublicClientApplication(
     authority: 'https://login.microsoftonline.com/<MICROSOFT_TENANT_ID>/oauth2/v2.0/authorize',
     // Change auth middleware if you need.
     authMiddleware: AuthMiddleware.msAuthenticator,
+    tenantType: TenantType.entraIDAndMicrosoftAccount
   ),
 );
 ```
 - To modify value of `authority` in `iOS`, follow [Configure iOS authority].
 
 - in `iOS`, if middleware is `AuthMiddleware.msAuthenticator` and `Authenticator` app is not installed on a device, It will use `Safari Browser` for authentication.
+
+- By default login will be attempted against an Entra ID (formerly Azure Active Directory) tenant which also supports Microsoft Account logins. To login to an Azure AD B2C tenant instead, set the `tenantType` value to `TenantType.azureADB2C`.
 
 ### Get Auth Token (Login to Microsoft account)
 
@@ -211,3 +217,4 @@ Follow [example] code for more details on implementation.
 [Configure iOS authority]: https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#change-the-default-authority
 [MSAL exceptions]: https://learn.microsoft.com/en-us/entra/msal/dotnet/advanced/exceptions/msal-error-handling
 [example]: https://pub.dev/packages/msal_auth/example
+[Configuring your project to use MSAL]: https://learn.microsoft.com/en-us/entra/msal/objc/install-and-configure-msal#configuring-your-project-to-use-msal
