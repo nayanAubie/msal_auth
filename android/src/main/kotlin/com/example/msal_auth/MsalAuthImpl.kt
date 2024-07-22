@@ -20,6 +20,7 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
     private val mTAG = "MsalAuthImpl"
 
     private var channel: MethodChannel? = null
+    private var loginHint: String? = null
 
     fun setMethodCallHandler(messenger: BinaryMessenger) {
         if (channel != null) {
@@ -45,6 +46,7 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         val scopesArg: ArrayList<String>? = call.argument("scopes")
         val scopes: Array<String>? = scopesArg?.toTypedArray()
         val configFilePath: String? = call.argument("configFilePath")
+        val innerLoginHint: String? = call.argument("loginHint")
 
         when (call.method) {
             "initialize" -> {
@@ -55,6 +57,7 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
             "acquireToken" -> Thread { acquireToken(scopes, result) }.start()
             "acquireTokenSilent" -> Thread { acquireTokenSilent(scopes, result) }.start()
             "logout" -> Thread { logout(result) }.start()
+            "setLoginHint" -> Thread { setLoginHint(innerLoginHint, result) }.start()
 
             else -> result.notImplemented()
         }
@@ -165,9 +168,12 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         msal.activity.let {
             val builder = AcquireTokenParameters.Builder()
             builder.startAuthorizationFromActivity(it?.activity)
-                .withScopes(scopes.toList())
-                .withPrompt(Prompt.LOGIN)
-                .withCallback(msal.getAuthCallback(result))
+                    .withScopes(scopes.toList())
+                    .withPrompt(Prompt.LOGIN)
+                    .withCallback(msal.getAuthCallback(result))
+            if (loginHint != null) {
+                builder.withLoginHint(loginHint)
+            }
             val acquireTokenParameters = builder.build()
             msal.clientApplication.acquireToken(acquireTokenParameters)
         }
@@ -187,5 +193,10 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
             File(configFilePath!!),
             msal.getApplicationCreatedListener(result)
         )
+    }
+
+    private fun setLoginHint(loginHint: String?, result: MethodChannel.Result) {
+        this.loginHint = loginHint;
+        result.success(null)
     }
 }

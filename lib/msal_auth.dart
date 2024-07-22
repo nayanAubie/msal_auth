@@ -106,4 +106,8 @@ class MsalAuth {
       throw e.msalException;
     }
   }
+
+  Future<void> setLoginHint(String loginHint) async {
+    return _methodChannel.invokeMethod('setLoginHint', <String, dynamic>{"loginHint": loginHint});
+  }
 }

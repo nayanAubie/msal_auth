@@ -8,6 +8,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     static var authority : String = ""
     static var authMiddleware : String = ""
     static var tenantType : String = ""
+    static var loginHint : String = ""
     
     static let kCurrentAccountIdentifier = "MSALCurrentAccountIdentifier"
     
@@ -28,12 +29,14 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         let authority = dict["authority"] as? String ?? ""
         let authMiddleware = dict["authMiddleware"] as? String ?? ""
         let tenantType = dict["tenantType"] as? String ?? ""
+        let loginHint = dict["loginHint"] as? String ?? ""
         
         switch( call.method ){
         case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, tenantType: tenantType, result: result)
         case "acquireToken": acquireToken(scopes: scopes, result: result)
         case "acquireTokenSilent": acquireTokenSilent(scopes: scopes, result: result)
         case "logout": logout(result: result)
+        case "setLoginHint": setLoginHint(loginHint: loginHint, result: result)
         default: result(FlutterMethodNotImplemented)
         }
     }
@@ -98,6 +101,10 @@ extension MsalAuthPlugin {
             
             let interactiveParameters = MSALInteractiveTokenParameters(scopes: scopes, webviewParameters: webViewParameters)
             interactiveParameters.promptType = MSALPromptType.login
+
+            if (MsalAuthPlugin.loginHint != "") {
+                interactiveParameters.loginHint = MsalAuthPlugin.loginHint
+            }
             
             application.acquireToken(with: interactiveParameters, completionBlock: { (msalresult, error) in
                 guard let authResult = msalresult, error == nil else {
@@ -393,5 +400,12 @@ extension WKWebView {
     
     func refreshCookies() {
         self.configuration.processPool = WKProcessPool()
+    }
+}
+
+extension MsalAuthPlugin {
+    private func setLoginHint(loginHint: String, result: @escaping FlutterResult) {
+        MsalAuthPlugin.loginHint = loginHint
+        result(true)
     }
 }
