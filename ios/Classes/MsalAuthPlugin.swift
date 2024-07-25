@@ -32,11 +32,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         let loginHint = dict["loginHint"] as? String ?? ""
         
         switch( call.method ){
-        case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, tenantType: tenantType, result: result)
+        case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, tenantType: tenantType, loginHint: loginHint, result: result)
         case "acquireToken": acquireToken(scopes: scopes, result: result)
         case "acquireTokenSilent": acquireTokenSilent(scopes: scopes, result: result)
         case "logout": logout(result: result)
-        case "setLoginHint": setLoginHint(loginHint: loginHint, result: result)
         default: result(FlutterMethodNotImplemented)
         }
     }
@@ -65,7 +64,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         return nil
     }
     
-    private func initialize(clientId: String, authority: String, authMiddleware: String, tenantType: String, result: @escaping FlutterResult)
+    private func initialize(clientId: String, authority: String, authMiddleware: String, tenantType: String, loginHint: String, result: @escaping FlutterResult)
     {
         // validate clientId
         if(clientId.isEmpty){
@@ -77,6 +76,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         MsalAuthPlugin.authority = authority;
         MsalAuthPlugin.authMiddleware = authMiddleware;
         MsalAuthPlugin.tenantType = tenantType;
+        MsalAuthPlugin.loginHint = loginHint;
         if (authMiddleware != "msAuthenticator") {
             MSALGlobalConfig.brokerAvailability = .none
         }
@@ -105,7 +105,7 @@ extension MsalAuthPlugin {
             if (MsalAuthPlugin.loginHint != "") {
                 interactiveParameters.loginHint = MsalAuthPlugin.loginHint
             }
-            
+                        
             application.acquireToken(with: interactiveParameters, completionBlock: { (msalresult, error) in
                 guard let authResult = msalresult, error == nil else {
                     
@@ -400,12 +400,5 @@ extension WKWebView {
     
     func refreshCookies() {
         self.configuration.processPool = WKProcessPool()
-    }
-}
-
-extension MsalAuthPlugin {
-    private func setLoginHint(loginHint: String, result: @escaping FlutterResult) {
-        MsalAuthPlugin.loginHint = loginHint
-        result(true)
     }
 }

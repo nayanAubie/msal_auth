@@ -22,6 +22,7 @@ class MsalAuth {
     required List<String> scopes,
     AndroidConfig? androidConfig,
     IosConfig? iosConfig,
+    String? loginHint
   }) async {
     try {
       late final Map<String, dynamic> arguments;
@@ -48,7 +49,8 @@ class MsalAuth {
           'clientId': clientId,
           'authority': iosConfig!.authority,
           'authMiddleware': iosConfig.authMiddleware.name,
-          'tenantType': iosConfig.tenantType.name
+          'tenantType': iosConfig.tenantType.name,
+          'loginHint': loginHint
         };
       }
 
@@ -105,9 +107,5 @@ class MsalAuth {
     } on PlatformException catch (e) {
       throw e.msalException;
     }
-  }
-
-  Future<void> setLoginHint(String loginHint) async {
-    return _methodChannel.invokeMethod('setLoginHint', <String, dynamic>{"loginHint": loginHint});
   }
 }
