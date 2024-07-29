@@ -8,6 +8,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     static var authority : String = ""
     static var authMiddleware : String = ""
     static var tenantType : String = ""
+    static var loginHint : String = ""
     
     static let kCurrentAccountIdentifier = "MSALCurrentAccountIdentifier"
     
@@ -28,9 +29,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         let authority = dict["authority"] as? String ?? ""
         let authMiddleware = dict["authMiddleware"] as? String ?? ""
         let tenantType = dict["tenantType"] as? String ?? ""
+        let loginHint = dict["loginHint"] as? String ?? ""
         
         switch( call.method ){
-        case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, tenantType: tenantType, result: result)
+        case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, tenantType: tenantType, loginHint: loginHint, result: result)
         case "acquireToken": acquireToken(scopes: scopes, result: result)
         case "acquireTokenSilent": acquireTokenSilent(scopes: scopes, result: result)
         case "logout": logout(result: result)
@@ -62,7 +64,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         return nil
     }
     
-    private func initialize(clientId: String, authority: String, authMiddleware: String, tenantType: String, result: @escaping FlutterResult)
+    private func initialize(clientId: String, authority: String, authMiddleware: String, tenantType: String, loginHint: String, result: @escaping FlutterResult)
     {
         // validate clientId
         if(clientId.isEmpty){
@@ -74,6 +76,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         MsalAuthPlugin.authority = authority;
         MsalAuthPlugin.authMiddleware = authMiddleware;
         MsalAuthPlugin.tenantType = tenantType;
+        MsalAuthPlugin.loginHint = loginHint;
         if (authMiddleware != "msAuthenticator") {
             MSALGlobalConfig.brokerAvailability = .none
         }
@@ -98,7 +101,11 @@ extension MsalAuthPlugin {
             
             let interactiveParameters = MSALInteractiveTokenParameters(scopes: scopes, webviewParameters: webViewParameters)
             interactiveParameters.promptType = MSALPromptType.login
-            
+
+            if (MsalAuthPlugin.loginHint != "") {
+                interactiveParameters.loginHint = MsalAuthPlugin.loginHint
+            }
+                        
             application.acquireToken(with: interactiveParameters, completionBlock: { (msalresult, error) in
                 guard let authResult = msalresult, error == nil else {
                     
