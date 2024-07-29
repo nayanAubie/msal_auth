@@ -20,9 +20,9 @@ class MsalAuth {
   static Future<MsalAuth> createPublicClientApplication({
     required String clientId,
     required List<String> scopes,
+    String? loginHint,
     AndroidConfig? androidConfig,
     IosConfig? iosConfig,
-    String? loginHint
   }) async {
     try {
       late final Map<String, dynamic> arguments;
@@ -50,7 +50,7 @@ class MsalAuth {
           'authority': iosConfig!.authority,
           'authMiddleware': iosConfig.authMiddleware.name,
           'tenantType': iosConfig.tenantType.name,
-          'loginHint': loginHint
+          'loginHint': loginHint,
         };
       }
 
