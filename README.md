@@ -163,6 +163,7 @@ final msalAuth = await MsalAuth.createPublicClientApplication(
     'https://graph.microsoft.com/user.read',
     // Add other scopes here if required.
   ],
+  loginHint: '<EMAIL ID (Optional)>'
   androidConfig: AndroidConfig(
     configFilePath: 'assets/msal_config.json',
     tenantId: '<MICROSOFT_TENANT_ID (Optional)>',
@@ -171,7 +172,7 @@ final msalAuth = await MsalAuth.createPublicClientApplication(
     authority: 'https://login.microsoftonline.com/<MICROSOFT_TENANT_ID>/oauth2/v2.0/authorize',
     // Change auth middleware if you need.
     authMiddleware: AuthMiddleware.msAuthenticator,
-    tenantType: TenantType.entraIDAndMicrosoftAccount
+    tenantType: TenantType.entraIDAndMicrosoftAccount,
   ),
 );
 ```
