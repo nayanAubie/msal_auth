@@ -35,6 +35,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, tenantType: tenantType, loginHint: loginHint, result: result)
         case "acquireToken": acquireToken(scopes: scopes, result: result)
         case "acquireTokenSilent": acquireTokenSilent(scopes: scopes, result: result)
+        case "getIDToken": getIDToken(result: result)
         case "logout": logout(result: result)
         default: result(FlutterMethodNotImplemented)
         }
@@ -46,6 +47,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         
         var accountMap = authResult.account.accountClaims ?? [String: Any]()
         accountMap["access_token"] = authResult.accessToken
+        accountMap["id_token"] = authResult.idToken
         accountMap["exp"] = Int(floor(authResult.expiresOn!.timeIntervalSince1970 * 1000.0))
         
         let signedInAccount = authResult.account
@@ -236,6 +238,10 @@ extension MsalAuthPlugin {
         })
     }
     
+    private func getIDToken(result: @escaping FlutterResult) {
+
+    }
+
     private func logout(result: @escaping FlutterResult)
     {
         
