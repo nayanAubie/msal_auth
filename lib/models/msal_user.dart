@@ -15,7 +15,7 @@ class MsalUser {
   /// Token expiration time in "MillisecondsSinceEpoch".
   final int tokenExpiresOn;
 
-  /// The raw id token if it's returned by the service or nil if no id token is returned.
+  /// Azure AD ID token.
   final String idToken;
 
   MsalUser({
