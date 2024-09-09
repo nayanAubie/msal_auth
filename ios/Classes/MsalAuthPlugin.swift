@@ -35,7 +35,6 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, tenantType: tenantType, loginHint: loginHint, result: result)
         case "acquireToken": acquireToken(scopes: scopes, result: result)
         case "acquireTokenSilent": acquireTokenSilent(scopes: scopes, result: result)
-        case "getIDToken": getIDToken(result: result)
         case "logout": logout(result: result)
         default: result(FlutterMethodNotImplemented)
         }
