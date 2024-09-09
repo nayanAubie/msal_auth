@@ -237,10 +237,6 @@ extension MsalAuthPlugin {
             result(true)
         })
     }
-    
-    private func getIDToken(result: @escaping FlutterResult) {
-
-    }
 
     private func logout(result: @escaping FlutterResult)
     {
