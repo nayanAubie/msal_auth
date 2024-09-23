@@ -1,3 +1,7 @@
+## 2.0.2
+
+- Added `idToken` param in `MsalUser` class.
+
 ## 2.0.1
 
 - Added support of `loginHint`.

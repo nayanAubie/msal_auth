@@ -1,6 +1,6 @@
 name: msal_auth
 description: "A comprehensive Flutter plugin for managing Microsoft authentication using the native Microsoft Authentication Library (MSAL)."
-version: 2.0.1
+version: 2.0.2
 homepage: https://auberginesolutions.com
 repository: https://github.com/nayanAubie/msal_auth
 issue_tracker: https://github.com/nayanAubie/msal_auth/issues

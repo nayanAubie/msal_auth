@@ -34,7 +34,7 @@ class MsalUser {
       accessToken: json['access_token'] ?? '',
       tokenCreatedAt: json['iat'] ?? '',
       tokenExpiresOn: json['exp'] ?? '',
-      idToken: json["id_token"] ?? '',
+      idToken: json['id_token'] ?? '',
     );
   }
 
