@@ -236,7 +236,7 @@ extension MsalAuthPlugin {
             result(true)
         })
     }
-
+    
     private func logout(result: @escaping FlutterResult)
     {
         
@@ -386,7 +386,6 @@ extension UIViewController {
 }
 
 extension WKWebView {
-    
     func cleanAllCookies() {
         HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
         print("All cookies deleted")
