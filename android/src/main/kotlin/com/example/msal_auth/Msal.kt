@@ -49,6 +49,7 @@ class Msal(context: Context, internal var activity: FlutterActivity?) {
                     val accountMap = mutableMapOf<String, Any?>()
                     authenticationResult.account.claims?.let { accountMap.putAll(it) }
                     accountMap["access_token"] = authenticationResult.accessToken
+                    accountMap["id_token"] = authenticationResult.getAccount().getIdToken()
                     accountMap["exp"] = authenticationResult.expiresOn.time
                     result.success(Gson().toJson(accountMap))
                 }
@@ -86,6 +87,7 @@ class Msal(context: Context, internal var activity: FlutterActivity?) {
                     val accountMap = mutableMapOf<String, Any?>()
                     authenticationResult.account.claims?.let { accountMap.putAll(it) }
                     accountMap["access_token"] = authenticationResult.accessToken
+                    accountMap["id_token"] = authenticationResult.getAccount().getIdToken()
                     accountMap["exp"] = authenticationResult.expiresOn.time
                     result.success(Gson().toJson(accountMap))
                 }
