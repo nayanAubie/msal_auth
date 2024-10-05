@@ -1,5 +1,8 @@
 /// Microsoft user details.
 class MsalUser {
+  /// Azure AD object ID.
+  final String oid;
+
   /// Usually, it's an email address.
   final String username;
 
@@ -19,6 +22,7 @@ class MsalUser {
   final String idToken;
 
   MsalUser({
+    required this.oid,
     required this.username,
     required this.displayName,
     required this.accessToken,
@@ -29,6 +33,7 @@ class MsalUser {
 
   factory MsalUser.fromJson(Map<String, dynamic> json) {
     return MsalUser(
+      oid: json['oid'] ?? '',
       username: json['preferred_username'] ?? '',
       displayName: json['name'] ?? '',
       accessToken: json['access_token'] ?? '',
@@ -39,6 +44,7 @@ class MsalUser {
   }
 
   Map<String, dynamic>? toJson() => {
+        'oid': oid,
         'username': username,
         'displayName': displayName,
         'accessToken': accessToken,
