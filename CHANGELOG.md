@@ -1,3 +1,7 @@
+## 2.1.0
+
+- Fixed issue of `activity is null` when `FlutterFragmentActivity` is used in `MainActivity.kt`
+
 ## 2.0.2
 
 - Added `idToken` param in `MsalUser` class.
