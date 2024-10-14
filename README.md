@@ -150,6 +150,31 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
 </array>
 ```
 
+### `ios/Runner/AppDelegate.swift` file changes
+
+- To get a correct callback behvior and no endless Loading on iOS the content of the AppDelegate.swift should be extended.
+
+```AppDelegate.swift
+import Flutter
+import UIKit
+import MSAL
+
+@main
+@objc class AppDelegate: FlutterAppDelegate {
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    GeneratedPluginRegistrant.register(with: self)
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    return MSALPublicClientApplication.handleMSALResponse(url, sourceApplication: options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String)
+  }
+}
+```
+
 ## Code Implementation 👨‍💻
 
 - This section contains writing `Dart` code to setup a `MSAL` application in `Flutter` and get auth token.
