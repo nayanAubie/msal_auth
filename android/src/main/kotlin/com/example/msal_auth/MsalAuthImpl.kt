@@ -76,7 +76,7 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
             Handler(Looper.getMainLooper()).post {
                 result.error(
                     "AUTH_ERROR",
-                    "No account is available to acquire token silently",
+                    "No account is available to logout",
                     null
                 )
             }
@@ -164,7 +164,7 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
 
         msal.activity.let {
             val builder = AcquireTokenParameters.Builder()
-            builder.startAuthorizationFromActivity(it?.activity)
+            builder.startAuthorizationFromActivity(it)
                 .withScopes(scopes.toList())
                 .withPrompt(Prompt.LOGIN)
                 .withCallback(msal.getAuthCallback(result))
