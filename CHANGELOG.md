@@ -1,3 +1,11 @@
+## 2.0.2
+
+- Added `idToken` param in `MsalUser` class.
+
+## 2.0.1
+
+- Added support of `loginHint`.
+
 ## 2.0.0
 
 - Added support for authenticating against Azure AD B2C tenants on iOS.

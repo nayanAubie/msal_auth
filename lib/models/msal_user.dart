@@ -15,12 +15,16 @@ class MsalUser {
   /// Token expiration time in "MillisecondsSinceEpoch".
   final int tokenExpiresOn;
 
+  /// Azure AD ID token.
+  final String idToken;
+
   MsalUser({
     required this.username,
     required this.displayName,
     required this.accessToken,
     required this.tokenCreatedAt,
     required this.tokenExpiresOn,
+    required this.idToken,
   });
 
   factory MsalUser.fromJson(Map<String, dynamic> json) {
@@ -30,6 +34,7 @@ class MsalUser {
       accessToken: json['access_token'] ?? '',
       tokenCreatedAt: json['iat'] ?? '',
       tokenExpiresOn: json['exp'] ?? '',
+      idToken: json['id_token'] ?? '',
     );
   }
 
@@ -39,5 +44,6 @@ class MsalUser {
         'accessToken': accessToken,
         'tokenCreatedAt': tokenCreatedAt,
         'tokenExpiresOn': tokenExpiresOn,
+        'idToken': idToken,
       };
 }

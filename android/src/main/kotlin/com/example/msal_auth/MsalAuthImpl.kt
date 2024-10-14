@@ -20,6 +20,7 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
     private val mTAG = "MsalAuthImpl"
 
     private var channel: MethodChannel? = null
+    private var loginHint: String? = null
 
     fun setMethodCallHandler(messenger: BinaryMessenger) {
         if (channel != null) {
@@ -45,6 +46,7 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         val scopesArg: ArrayList<String>? = call.argument("scopes")
         val scopes: Array<String>? = scopesArg?.toTypedArray()
         val configFilePath: String? = call.argument("configFilePath")
+        loginHint = call.argument("loginHint") ?: null
 
         when (call.method) {
             "initialize" -> {
@@ -164,10 +166,12 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
 
         msal.activity.let {
             val builder = AcquireTokenParameters.Builder()
-            builder.startAuthorizationFromActivity(it)
-                .withScopes(scopes.toList())
-                .withPrompt(Prompt.LOGIN)
-                .withCallback(msal.getAuthCallback(result))
+            builder.startAuthorizationFromActivity(it?.activity)
+                    .withScopes(scopes.toList())
+                    .withPrompt(Prompt.LOGIN)
+                    .withCallback(msal.getAuthCallback(result))
+                    .withLoginHint(loginHint)
+
             val acquireTokenParameters = builder.build()
             msal.clientApplication.acquireToken(acquireTokenParameters)
         }

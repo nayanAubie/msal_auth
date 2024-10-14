@@ -12,7 +12,7 @@ class IosConfig {
   IosConfig({
     required this.authority,
     this.authMiddleware = AuthMiddleware.msAuthenticator,
-    this.tenantType = TenantType.entraIDAndMicrosoftAccount
+    this.tenantType = TenantType.entraIDAndMicrosoftAccount,
   });
 }
 
