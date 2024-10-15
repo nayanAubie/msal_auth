@@ -5,11 +5,11 @@ import android.os.Handler
 import android.os.Looper
 import com.google.gson.Gson
 import com.microsoft.identity.client.AuthenticationCallback
-import com.microsoft.identity.client.IAccount
 import com.microsoft.identity.client.IAuthenticationResult
 import com.microsoft.identity.client.IMultipleAccountPublicClientApplication
-import com.microsoft.identity.client.IPublicClientApplication
 import com.microsoft.identity.client.IPublicClientApplication.IMultipleAccountApplicationCreatedListener
+import com.microsoft.identity.client.IPublicClientApplication.ISingleAccountApplicationCreatedListener
+import com.microsoft.identity.client.ISingleAccountPublicClientApplication
 import com.microsoft.identity.client.SilentAuthenticationCallback
 import com.microsoft.identity.client.exception.MsalException
 import com.microsoft.identity.client.exception.MsalUiRequiredException
@@ -19,21 +19,41 @@ import io.flutter.plugin.common.MethodChannel
 class Msal(context: Context, internal var activity: FlutterActivity?) {
     internal val applicationContext = context
 
-    lateinit var clientApplication: IMultipleAccountPublicClientApplication
-    lateinit var accountList: List<IAccount>
 
     fun setActivity(activity: FlutterActivity) {
         this.activity = activity
     }
 
-    internal fun isClientInitialized(): Boolean = ::clientApplication.isInitialized
-
-    internal fun getApplicationCreatedListener(result: MethodChannel.Result): IMultipleAccountApplicationCreatedListener {
+    internal fun getMultipleAccountApplicationCreatedListener(
+        onCreated: (IMultipleAccountPublicClientApplication) -> Unit,
+        result: MethodChannel.Result
+    ): IMultipleAccountApplicationCreatedListener {
 
         return object : IMultipleAccountApplicationCreatedListener {
             override fun onCreated(application: IMultipleAccountPublicClientApplication) {
-                clientApplication = application
-                result.success(true)
+                onCreated(application)
+                Handler(Looper.getMainLooper()).post {
+                    result.success(true)
+                }
+            }
+
+            override fun onError(exception: MsalException?) {
+                result.error("AUTH_ERROR", exception?.message, null)
+            }
+        }
+    }
+
+    internal fun getSingleAccountApplicationCreatedListener(
+        onCreated: (ISingleAccountPublicClientApplication) -> Unit,
+        result: MethodChannel.Result
+    ): ISingleAccountApplicationCreatedListener {
+
+        return object : ISingleAccountApplicationCreatedListener {
+            override fun onCreated(application: ISingleAccountPublicClientApplication) {
+                onCreated(application)
+                Handler(Looper.getMainLooper()).post {
+                    result.success(true)
+                }
             }
 
             override fun onError(exception: MsalException?) {
@@ -106,26 +126,6 @@ class Msal(context: Context, internal var activity: FlutterActivity?) {
             }
         }
     }
-
-    /**
-     * Load currently signed-in accounts, if there's any.
-     */
-    internal fun loadAccounts(result: MethodChannel.Result) {
-        clientApplication.getAccounts(object : IPublicClientApplication.LoadAccountsCallback {
-
-            override fun onTaskCompleted(resultList: List<IAccount>) {
-                accountList = resultList
-                result.success(true)
-            }
-
-            override fun onError(exception: MsalException) {
-                result.error(
-                    "AUTH_ERROR",
-                    "No account is available to acquire token silently for",
-                    null
-                )
-            }
-        })
-    }
 }
+
 
