@@ -13,6 +13,7 @@ import com.microsoft.identity.client.ISingleAccountPublicClientApplication.Curre
 import com.microsoft.identity.client.Prompt
 import com.microsoft.identity.client.PublicClientApplication
 import com.microsoft.identity.client.SignInParameters
+import com.microsoft.identity.client.SingleAccountPublicClientApplication
 import com.microsoft.identity.client.exception.MsalException
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -160,6 +161,18 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         }
     }
 
+    private fun isAccountModeValid(accountMode: String?): Boolean {
+        return if (accountMode == null) {
+            false
+        } else if (accountMode == "singleAccount" && msalAuth is MsalAuthMultipleAccount) {
+            false
+        } else if (accountMode == "multipleAccount" && msalAuth is MsalAuthSingleAccount) {
+            false
+        } else {
+            true
+        }
+    }
+
 
     private fun initialize(
         accountMode: String?,
@@ -167,10 +180,21 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         result: MethodChannel.Result
     ) {
         if (isInitialised()) {
-            Handler(Looper.getMainLooper()).post {
-                result.success(true)
+            if (!isAccountModeValid(accountMode)) {
+                Handler(Looper.getMainLooper()).post {
+                    result.error(
+                        "AUTH_ERROR",
+                        "Cannot change public client app account type after initialisation",
+                        null
+                    )
+                }
+                return
+            } else {
+                Handler(Looper.getMainLooper()).post {
+                    result.success(true)
+                }
+                return
             }
-            return
         }
         if (accountMode == null) {
             Handler(Looper.getMainLooper()).post {
