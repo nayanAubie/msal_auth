@@ -7,8 +7,12 @@ import com.microsoft.identity.client.AcquireTokenParameters
 import com.microsoft.identity.client.AcquireTokenSilentParameters
 import com.microsoft.identity.client.IAccount
 import com.microsoft.identity.client.IMultipleAccountPublicClientApplication
+import com.microsoft.identity.client.IPublicClientApplication
+import com.microsoft.identity.client.ISingleAccountPublicClientApplication
+import com.microsoft.identity.client.ISingleAccountPublicClientApplication.CurrentAccountCallback
 import com.microsoft.identity.client.Prompt
 import com.microsoft.identity.client.PublicClientApplication
+import com.microsoft.identity.client.SignInParameters
 import com.microsoft.identity.client.exception.MsalException
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -18,9 +22,9 @@ import java.util.Locale
 
 class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
     private val mTAG = "MsalAuthImpl"
-
     private var channel: MethodChannel? = null
     private var loginHint: String? = null
+    private lateinit var msalAuth: MsalAuth
 
     fun setMethodCallHandler(messenger: BinaryMessenger) {
         if (channel != null) {
@@ -46,69 +50,268 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         val scopesArg: ArrayList<String>? = call.argument("scopes")
         val scopes: Array<String>? = scopesArg?.toTypedArray()
         val configFilePath: String? = call.argument("configFilePath")
-        loginHint = call.argument("loginHint") ?: null
+        val publicClientAppAccountType: String? = call.argument("publicClientAppAccountType")
+        loginHint = call.argument("loginHint")
 
         when (call.method) {
-            "initialize" -> {
-                initialize(configFilePath, result)
-            }
+            "initialize" -> Thread {
+                initialize(
+                    publicClientAppAccountType,
+                    configFilePath,
+                    result
+                )
+            }.start()
 
-            "loadAccounts" -> Thread { msal.loadAccounts(result) }.start()
-            "acquireToken" -> Thread { acquireToken(scopes, result) }.start()
-            "acquireTokenSilent" -> Thread { acquireTokenSilent(scopes, result) }.start()
-            "logout" -> Thread { logout(result) }.start()
+            "loadAccounts" -> Thread { handleLoadAccounts(result) }.start()
+            "loadAccount" -> Thread { handleLoadAccount(result) }.start()
+            "login" -> Thread { handleLogin(scopes, result) }.start()
+            "acquireToken" -> Thread { handleAcquireToken(scopes, result) }.start()
+            "acquireTokenSilent" -> Thread {
+                handleAcquireTokenSilent(
+                    scopes,
+                    result
+                )
+            }.start()
 
+            "logout" -> Thread { msalAuth.logout(result) }.start()
             else -> result.notImplemented()
         }
     }
 
-    private fun logout(result: MethodChannel.Result) {
-        if (!msal.isClientInitialized()) {
+    private fun isInitialised(): Boolean {
+        return ::msalAuth.isInitialized
+    }
+
+    private fun handleLoadAccount(result: MethodChannel.Result) {
+
+        if (!isInitialised()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Must initialize before attempting to load account.",
+                    null
+                )
+            }
+            return
+        } else {
+            msalAuth.getAccount(result)
+        }
+    }
+
+    private fun handleLoadAccounts(result: MethodChannel.Result) {
+        if (!isInitialised()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Must initialize before attempting to load accounts.",
+                    null
+                )
+            }
+            return
+        } else {
+            msalAuth.getAccounts(result)
+        }
+    }
+
+    private fun handleLogin(scopes: Array<String>?, result: MethodChannel.Result) {
+        if (!isInitialised()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error("AUTH_ERROR", "Must initialize before attempting to login.", null)
+            }
+            return
+        } else {
+            msalAuth.login(scopes, result)
+        }
+    }
+
+    private fun handleAcquireToken(scopes: Array<String>?, result: MethodChannel.Result) {
+        if (!isInitialised()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Must initialize before attempting to acquire token.",
+                    null
+                )
+            }
+            return
+        } else {
+            msalAuth.acquireToken(
+                scopes,
+                result
+            )
+        }
+    }
+
+    private fun handleAcquireTokenSilent(scopes: Array<String>?, result: MethodChannel.Result) {
+        if (!isInitialised()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Must initialize before attempting to acquire token silently.",
+                    null
+                )
+            }
+            return
+        } else {
+            msalAuth.acquireTokenSilent(
+                scopes,
+                result
+            )
+        }
+    }
+
+
+    private fun initialize(
+        accountMode: String?,
+        configFilePath: String?,
+        result: MethodChannel.Result
+    ) {
+        if (isInitialised()) {
+            Handler(Looper.getMainLooper()).post {
+                result.success(true)
+            }
+            return
+        }
+        if (accountMode == null) {
+            Handler(Looper.getMainLooper()).post {
+                result.error("AUTH_ERROR", "Public client app type not set", null)
+            }
+            return
+        }
+
+        when (accountMode) {
+            "singleAccount" -> {
+                msalAuth = MsalAuthSingleAccount(msal, loginHint)
+            }
+
+            "multipleAccount" -> {
+                msalAuth = MsalAuthMultipleAccount(msal, loginHint)
+            }
+
+            else -> {
+                Handler(Looper.getMainLooper()).post {
+                    result.error("AUTH_ERROR", "Invalid public application client app type", null)
+                }
+                return
+            }
+        }
+
+        msalAuth.initialize(configFilePath, result)
+    }
+
+}
+
+interface MsalAuth {
+    fun login(scopes: Array<String>?, result: MethodChannel.Result)
+    fun getAccount(result: MethodChannel.Result)
+    fun getAccounts(result: MethodChannel.Result)
+    fun logout(result: MethodChannel.Result)
+    fun acquireTokenSilent(scopes: Array<String>?, result: MethodChannel.Result)
+    fun acquireToken(scopes: Array<String>?, result: MethodChannel.Result)
+    fun initialize(configFilePath: String?, result: MethodChannel.Result)
+}
+
+class MsalAuthMultipleAccount(private val msal: Msal, private val loginHint: String?) :
+    MsalAuth {
+    private lateinit var accountList: List<IAccount>
+    private lateinit var clientApplication: IMultipleAccountPublicClientApplication
+
+    private fun isClientInitialized(): Boolean = ::clientApplication.isInitialized
+
+
+    override fun login(scopes: Array<String>?, result: MethodChannel.Result) {
+        Handler(Looper.getMainLooper()).post {
+            result.error(
+                "AUTH_ERROR",
+                "Login not implemented for multiple account public client application",
+                null
+            )
+        }
+    }
+
+    override fun getAccount(result: MethodChannel.Result) {
+        Handler(Looper.getMainLooper()).post {
+            result.error(
+                "AUTH_ERROR",
+                "Load account not implemented for multiple account public client application",
+                null
+            )
+        }
+    }
+
+    override fun getAccounts(result: MethodChannel.Result) {
+        if (!isClientInitialized()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Client must be initialized before attempting to load accounts.",
+                    null,
+                )
+            }
+            return
+        }
+        clientApplication.getAccounts(
+            object : IPublicClientApplication.LoadAccountsCallback {
+
+                override fun onTaskCompleted(resultList: List<IAccount>) {
+                    accountList = resultList
+                    result.success(true)
+                }
+
+                override fun onError(exception: MsalException) {
+                    result.error(
+                        "AUTH_ERROR",
+                        "No account is available to acquire token silently for",
+                        null
+                    )
+                }
+            }
+        )
+    }
+
+    override fun logout(result: MethodChannel.Result) {
+        if (!isClientInitialized()) {
             Handler(Looper.getMainLooper()).post {
                 result.error(
                     "AUTH_ERROR",
                     "Client must be initialized before attempting to logout",
-                    null
+                    null,
                 )
             }
             return
         }
-
-        if (msal.accountList.isEmpty()) {
+        if (accountList.isEmpty()) {
             Handler(Looper.getMainLooper()).post {
-                result.error(
-                    "AUTH_ERROR",
-                    "No account is available to acquire token silently",
-                    null
-                )
+                result.error("AUTH_ERROR", "No account is available to logout", null)
             }
             return
         }
 
-        msal.clientApplication.removeAccount(
-            msal.accountList.first(),
+        clientApplication.removeAccount(
+            accountList.first(),
             object : IMultipleAccountPublicClientApplication.RemoveAccountCallback {
                 override fun onRemoved() {
-                    Thread { msal.loadAccounts(result) }.start()
+                    Thread { getAccounts(result) }.start()
                 }
 
                 override fun onError(exception: MsalException) {
                     result.error("AUTH_ERROR", exception.message, exception.stackTrace)
                 }
-            })
+            }
+        )
     }
 
-    private fun acquireTokenSilent(scopes: Array<String>?, result: MethodChannel.Result) {
-        if (!msal.isClientInitialized()) {
+    override fun acquireTokenSilent(scopes: Array<String>?, result: MethodChannel.Result) {
+        if (!isClientInitialized()) {
             Handler(Looper.getMainLooper()).post {
                 result.error(
                     "AUTH_ERROR",
-                    "Client must be initialized before attempting to acquire a silent token.",
-                    null
+                    "Client must be initialized before attempting to acquire token silently",
+                    null,
                 )
             }
+            return
         }
-
         if (scopes == null) {
             Handler(Looper.getMainLooper()).post {
                 result.error("AUTH_ERROR", "Call must have the scopes", null)
@@ -117,7 +320,7 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         }
 
         // ensures that accounts are exist
-        if (msal.accountList.isEmpty()) {
+        if (accountList.isEmpty()) {
             Handler(Looper.getMainLooper()).post {
                 result.error(
                     "AUTH_ERROR",
@@ -128,7 +331,7 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
             return
         }
 
-        val selectedAccount: IAccount = msal.accountList.first()
+        val selectedAccount: IAccount = accountList.first()
         // acquire the token and return the result
         scopes.map { s -> s.lowercase(Locale.ROOT) }.toTypedArray()
 
@@ -138,58 +341,274 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
             .fromAuthority(selectedAccount.authority)
             .withCallback(msal.getAuthSilentCallback(result))
         val acquireTokenParameters = builder.build()
-        msal.clientApplication.acquireTokenSilentAsync(acquireTokenParameters)
+        clientApplication.acquireTokenSilentAsync(acquireTokenParameters)
     }
 
-    private fun acquireToken(scopes: Array<String>?, result: MethodChannel.Result) {
-        if (!msal.isClientInitialized()) {
+    override fun acquireToken(scopes: Array<String>?, result: MethodChannel.Result) {
+        if (!isClientInitialized()) {
             Handler(Looper.getMainLooper()).post {
                 result.error(
                     "AUTH_ERROR",
-                    "Client must be initialized before attempting to acquire a token.",
-                    null
+                    "Client must be initialized before attempting to acquire token",
+                    null,
                 )
             }
-        }
-
-        if (scopes == null) {
-            result.error("AUTH_ERROR", "Call must include a scope", null)
             return
         }
 
-        //remove old accounts
-        while (msal.clientApplication.accounts.any())
-            msal.clientApplication.removeAccount(msal.clientApplication.accounts.first())
+        if (scopes == null) {
+            Handler(Looper.getMainLooper()).post {
+                result.error("AUTH_ERROR", "Call must include a scope", null)
+            }
+            return
+        }
 
 
-        //acquire the token
+        // remove old accounts
+        while (clientApplication.accounts.any()) clientApplication.removeAccount(
+            clientApplication.accounts.first()
+        )
+
+        // acquire the token
 
         msal.activity.let {
             val builder = AcquireTokenParameters.Builder()
             builder.startAuthorizationFromActivity(it?.activity)
-                    .withScopes(scopes.toList())
-                    .withPrompt(Prompt.LOGIN)
-                    .withCallback(msal.getAuthCallback(result))
-                    .withLoginHint(loginHint)
-            
+                .withScopes(scopes.toList())
+                .withPrompt(Prompt.LOGIN)
+                .withCallback(msal.getAuthCallback(result))
+                .withLoginHint(loginHint)
+
             val acquireTokenParameters = builder.build()
-            msal.clientApplication.acquireToken(acquireTokenParameters)
+            clientApplication.acquireToken(acquireTokenParameters)
         }
     }
 
-    private fun initialize(
-        configFilePath: String?,
-        result: MethodChannel.Result
-    ) {
-        if (msal.isClientInitialized()) {
-            result.success(true)
+    override fun initialize(configFilePath: String?, result: MethodChannel.Result) {
+
+        if (isClientInitialized()) {
+            Handler(Looper.getMainLooper()).post {
+                result.success(true)
+            }
             return
         }
 
         PublicClientApplication.createMultipleAccountPublicClientApplication(
             msal.applicationContext,
             File(configFilePath!!),
-            msal.getApplicationCreatedListener(result)
+            msal.getMultipleAccountApplicationCreatedListener(onCreated = { publicClientApp ->
+                clientApplication = publicClientApp
+            }, result = result)
+        )
+    }
+}
+
+class MsalAuthSingleAccount(private val msal: Msal, private val loginHint: String?) :
+    MsalAuth {
+    private var currentAccount: IAccount? = null
+    private lateinit var clientApplication: ISingleAccountPublicClientApplication
+
+    private fun isClientInitialized(): Boolean = ::clientApplication.isInitialized
+
+
+    override fun getAccount(result: MethodChannel.Result) {
+        if (!isClientInitialized()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Client must be initialized before attempting to load account.",
+                    null,
+                )
+            }
+            return
+        }
+        clientApplication.getCurrentAccountAsync(
+            object : CurrentAccountCallback {
+                override fun onAccountLoaded(activeAccount: IAccount?) {
+                    currentAccount = activeAccount
+                    result.success(true)
+                }
+
+                override fun onAccountChanged(priorAccount: IAccount?, newAccount: IAccount?) {
+                    currentAccount = newAccount
+                    result.success(true)
+                }
+
+                override fun onError(exception: MsalException) {
+                    result.error("AUTH_ERROR", exception.message, exception.stackTrace)
+                }
+            }
+        )
+    }
+
+    override fun getAccounts(result: MethodChannel.Result) {
+        result.error(
+            "AUTH_ERROR",
+            "Load accounts not implemented for single account public client application",
+            null
+        )
+    }
+
+    override fun login(scopes: Array<String>?, result: MethodChannel.Result) {
+        if (!isClientInitialized()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Client must be initialized before attempting to login.",
+                    null,
+                )
+            }
+            return
+        }
+
+        if (scopes == null) {
+            Handler(Looper.getMainLooper()).post {
+                result.error("AUTH_ERROR", "Call must include a scope", null)
+            }
+            return
+        }
+
+        if (currentAccount != null) {
+            Handler(Looper.getMainLooper()).post {
+                result.error("AUTH_ERROR", "Logged in account exists", null)
+            }
+            return
+        }
+
+        msal.activity.let {
+            val builder = SignInParameters.builder()
+
+            builder.withActivity(it!!.activity)
+                .withScopes(scopes.toList())
+                .withPrompt(Prompt.LOGIN)
+                .withCallback(msal.getAuthCallback(result))
+                .withLoginHint(loginHint)
+
+            val signInParameters = builder.build()
+            clientApplication.signIn(
+                signInParameters
+            )
+        }
+    }
+
+    override fun logout(result: MethodChannel.Result) {
+        if (!isClientInitialized()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Client must be initialized before attempting to logout.",
+                    null,
+                )
+            }
+            return
+        }
+        if (currentAccount == null) {
+            Handler(Looper.getMainLooper()).post {
+                result.error("AUTH_ERROR", "No account is available to logout", null)
+            }
+            return
+        }
+
+        clientApplication.signOut()
+    }
+
+    override fun acquireTokenSilent(scopes: Array<String>?, result: MethodChannel.Result) {
+        if (!isClientInitialized()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Client must be initialized before attempting to acquire token silently.",
+                    null,
+                )
+            }
+            return
+        }
+
+        if (scopes == null) {
+            Handler(Looper.getMainLooper()).post {
+                result.error("AUTH_ERROR", "Call must have the scopes", null)
+            }
+            return
+        }
+
+        // ensures that account exists
+        if (currentAccount == null) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "No account is available to acquire token silently",
+                    null
+                )
+            }
+            return
+        }
+
+        // acquire the token and return the result
+        scopes.map { s -> s.lowercase(Locale.ROOT) }.toTypedArray()
+
+        val builder = AcquireTokenSilentParameters.Builder()
+        builder.withScopes(scopes.toList())
+            .forAccount(currentAccount)
+            .fromAuthority(currentAccount!!.authority)
+            .withCallback(msal.getAuthSilentCallback(result))
+        val acquireTokenParameters = builder.build()
+        clientApplication.acquireTokenSilentAsync(acquireTokenParameters)
+    }
+
+    override fun acquireToken(scopes: Array<String>?, result: MethodChannel.Result) {
+        if (!isClientInitialized()) {
+            Handler(Looper.getMainLooper()).post {
+                result.error(
+                    "AUTH_ERROR",
+                    "Client must be initialized before attempting to acquire token.",
+                    null,
+                )
+            }
+            return
+        }
+        if (scopes == null) {
+            Handler(Looper.getMainLooper()).post {
+                result.error("AUTH_ERROR", "Call must include a scope", null)
+            }
+            return
+        }
+
+        if (currentAccount == null) {
+            Handler(Looper.getMainLooper()).post {
+                result.error("AUTH_ERROR", "No account is available to acquire token", null)
+            }
+            return
+        }
+
+        msal.activity.let {
+            val builder = AcquireTokenParameters.Builder()
+            builder.startAuthorizationFromActivity(it?.activity)
+                .forAccount(currentAccount)
+                .withScopes(scopes.toList())
+                .withPrompt(Prompt.LOGIN)
+                .withCallback(msal.getAuthCallback(result))
+                .withLoginHint(loginHint)
+
+            val acquireTokenParameters = builder.build()
+            clientApplication.acquireToken(acquireTokenParameters)
+        }
+    }
+
+    override fun initialize(configFilePath: String?, result: MethodChannel.Result) {
+        if (isClientInitialized()) {
+            Handler(Looper.getMainLooper()).post {
+                result.success(true)
+            }
+            return
+        }
+
+        PublicClientApplication.createSingleAccountPublicClientApplication(
+            msal.applicationContext,
+            File(configFilePath!!),
+            msal.getSingleAccountApplicationCreatedListener(
+                onCreated = { v -> clientApplication = v },
+                result
+            )
         )
     }
 }
