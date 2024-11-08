@@ -1,3 +1,7 @@
+## 2.1.1
+
+- Updated README for login process stuck on iOS due to missing callback handling. issue#26, issue#33
+
 ## 2.1.0
 
 - Fixed issue of `activity is null` when `FlutterFragmentActivity` is used in `MainActivity.kt`
