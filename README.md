@@ -48,7 +48,7 @@ To implement `MSAL` in `Flutter`, You need to setup an app in `Azure Portal` and
   
 ### iOS Setup - Azure portal
 
-- For iOS, You need to provide only `Bundle ID`.
+- For iOS, You need to provide only `Bundle ID`. `Redirect URI` will be generated automatically by system.
 
   ![iOS Redirect URI](/Screenshots/iOS-Redirect-URI.png)
 
@@ -126,29 +126,71 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
 
 ## iOS Configuration
 
-- Add a new keychain group to your project capabilities. The keychain group should be `com.microsoft.adalcache`. [Configuring your project to use MSAL]
+- Add a new keychain group `com.microsoft.adalcache` to your project capabilities.
 
-- If you need to application's redirect URI scheme & `LSApplicationQueriesSchemes` to allow making calls to [Microsoft Authenticator] if installed, the below modifications will also be made to your `Info.plist` file. 
-  
 ### `Info.plist` Modification
 
-```Plist
-<key>CFBundleURLTypes</key>
-<array>
-  <dict>
-    <key>CFBundleURLSchemes</key>
-    <array>
-    	<string>msauth.$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    </array>
-  </dict>
-</array>
+- Add your application's redirect URI scheme to your `Info.plist` file:
 
-<key>LSApplicationQueriesSchemes</key>
-<array>
-  <string>msauthv2</string>
-  <string>msauthv3</string>
-</array>
+  ```plist
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>msauth.$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+        </array>
+    </dict>
+  </array>
+  ```
+
+- Add `LSApplicationQueriesSchemes` to allow making call to [Microsoft Authenticator] app if installed.
+
+  ```plist
+  <key>LSApplicationQueriesSchemes</key>
+  <array>
+	  <string>msauthv2</string>
+	  <string>msauthv3</string>
+  </array>
+  ```
+
+### Handle `callback` from MSAL
+
+- Your app needs to handle login success callback if app uses [Microsoft Authenticator] app OR `Safari Browser` as a authentication middleware. `WebView` does not require it.
+
+#### AppDelegate.swift
+
+```swift
+import MSAL
+
+override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+      return MSALPublicClientApplication.handleMSALResponse(url, sourceApplication: options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String)
+}
 ```
+
+- See [`AppDelegate.swift`] for more clarity.
+
+- If you adopted `UISceneDelegate` on iOS 13+, MSAL callback needs to be placed into the appropriate delegate method of `UISceneDelegate` instead of `AppDelegate`.
+
+#### SceneDelegate.swift
+
+```swift
+import MSAL
+
+func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        
+  guard let urlContext = URLContexts.first else {
+    return
+  }
+        
+  let url = urlContext.url
+  let sourceApp = urlContext.options.sourceApplication
+        
+  MSALPublicClientApplication.handleMSALResponse(url, sourceApplication: sourceApp)
+}
+```
+
+- See more info on [iOS MSAL configuration].
 
 ## Code Implementation 👨‍💻
 
@@ -207,15 +249,16 @@ if (msalUser.tokenExpiresOn <= DateTime.now().millisecondsSinceEpoch) {
 
 ---
 
-Follow [example] code for more details on implementation.
+Follow [`example`] code for more details on implementation.
 
 
 [Azure Portal]: https://portal.azure.com/
 [Microsoft default configuration file]: https://learn.microsoft.com/en-in/entra/identity-platform/msal-configuration#the-default-msal-configuration-file
 [Microsoft Authenticator App]: https://play.google.com/store/apps/details?id=com.azure.authenticator
 [Android MSAL configuration]: https://learn.microsoft.com/en-in/entra/identity-platform/msal-configuration
+[iOS MSAL configuration]: https://learn.microsoft.com/en-us/entra/msal/objc/install-and-configure-msal#configuring-your-project-to-use-msal
 [Microsoft Authenticator]: https://apps.apple.com/us/app/microsoft-authenticator/id983156458
 [Configure iOS authority]: https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#change-the-default-authority
 [MSAL exceptions]: https://learn.microsoft.com/en-us/entra/msal/dotnet/advanced/exceptions/msal-error-handling
-[example]: https://pub.dev/packages/msal_auth/example
-[Configuring your project to use MSAL]: https://learn.microsoft.com/en-us/entra/msal/objc/install-and-configure-msal#configuring-your-project-to-use-msal
+[`example`]: example
+[`AppDelegate.swift`]: example/ios/Runner/AppDelegate.swift

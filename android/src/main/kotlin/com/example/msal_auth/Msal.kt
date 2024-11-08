@@ -1,5 +1,6 @@
 package com.example.msal_auth
 
+import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -13,16 +14,15 @@ import com.microsoft.identity.client.IPublicClientApplication.IMultipleAccountAp
 import com.microsoft.identity.client.SilentAuthenticationCallback
 import com.microsoft.identity.client.exception.MsalException
 import com.microsoft.identity.client.exception.MsalUiRequiredException
-import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.MethodChannel
 
-class Msal(context: Context, internal var activity: FlutterActivity?) {
+class Msal(context: Context, internal var activity: Activity?) {
     internal val applicationContext = context
 
     lateinit var clientApplication: IMultipleAccountPublicClientApplication
     lateinit var accountList: List<IAccount>
 
-    fun setActivity(activity: FlutterActivity) {
+    fun setActivity(activity: Activity) {
         this.activity = activity
     }
 

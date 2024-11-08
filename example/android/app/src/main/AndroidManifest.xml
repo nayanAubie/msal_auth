@@ -35,7 +35,7 @@
 
                 <data
                     android:host="com.example.msal_auth_example"
-                    android:path="/<BASE64_ENCODED_PACKAGE_SIGNATURE>"
+                    android:path="/d6fGnqW06DVdPPe3zG12HTV2QkI="
                     android:scheme="msauth" />
             </intent-filter>
         </activity>
