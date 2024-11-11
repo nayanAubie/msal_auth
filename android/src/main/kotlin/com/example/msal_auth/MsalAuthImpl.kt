@@ -20,7 +20,6 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
     private val mTAG = "MsalAuthImpl"
 
     private var channel: MethodChannel? = null
-    private var loginHint: String? = null
 
     fun setMethodCallHandler(messenger: BinaryMessenger) {
         if (channel != null) {
@@ -46,15 +45,21 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         val scopesArg: ArrayList<String>? = call.argument("scopes")
         val scopes: Array<String>? = scopesArg?.toTypedArray()
         val configFilePath: String? = call.argument("configFilePath")
-        loginHint = call.argument("loginHint") ?: null
+        val promptArg: String? = call.argument("prompt")
+        val loginHint: String? = call.argument("loginHint")
+
+        val prompt: Prompt = when (promptArg) {
+            "selectAccount" -> Prompt.SELECT_ACCOUNT
+            "login" -> Prompt.LOGIN
+            "consent" -> Prompt.CONSENT
+            "create" -> Prompt.CREATE
+            else -> Prompt.WHEN_REQUIRED
+        }
 
         when (call.method) {
-            "initialize" -> {
-                initialize(configFilePath, result)
-            }
-
+            "initialize" -> initialize(configFilePath, result)
             "loadAccounts" -> Thread { msal.loadAccounts(result) }.start()
-            "acquireToken" -> Thread { acquireToken(scopes, result) }.start()
+            "acquireToken" -> Thread { acquireToken(scopes, prompt, loginHint, result) }.start()
             "acquireTokenSilent" -> Thread { acquireTokenSilent(scopes, result) }.start()
             "logout" -> Thread { logout(result) }.start()
 
@@ -141,7 +146,12 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         msal.clientApplication.acquireTokenSilentAsync(acquireTokenParameters)
     }
 
-    private fun acquireToken(scopes: Array<String>?, result: MethodChannel.Result) {
+    private fun acquireToken(
+        scopes: Array<String>?,
+        prompt: Prompt,
+        loginHint: String?,
+        result: MethodChannel.Result
+    ) {
         if (!msal.isClientInitialized()) {
             Handler(Looper.getMainLooper()).post {
                 result.error(
@@ -167,10 +177,10 @@ class MsalAuthImpl(private val msal: Msal) : MethodChannel.MethodCallHandler {
         msal.activity.let {
             val builder = AcquireTokenParameters.Builder()
             builder.startAuthorizationFromActivity(it)
-                    .withScopes(scopes.toList())
-                    .withPrompt(Prompt.LOGIN)
-                    .withCallback(msal.getAuthCallback(result))
-                    .withLoginHint(loginHint)
+                .withScopes(scopes.toList())
+                .withPrompt(prompt)
+                .withCallback(msal.getAuthCallback(result))
+                .withLoginHint(loginHint)
 
             val acquireTokenParameters = builder.build()
             msal.clientApplication.acquireToken(acquireTokenParameters)
