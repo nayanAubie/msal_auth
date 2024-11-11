@@ -20,12 +20,11 @@ class MsalAuth {
   static Future<MsalAuth> createPublicClientApplication({
     required String clientId,
     required List<String> scopes,
-    String? loginHint,
     AndroidConfig? androidConfig,
     IosConfig? iosConfig,
   }) async {
     try {
-      late final Map<String, dynamic> arguments;
+      final arguments = <String, dynamic>{};
 
       if (Platform.isAndroid) {
         assert(androidConfig != null, 'Android config can not be null');
@@ -42,16 +41,15 @@ class MsalAuth {
         final file = File('${directory.path}/msal_auth_config.json');
         await file.writeAsBytes(utf8.encode(json.encode(map)));
 
-        arguments = {'configFilePath': file.path};
+        arguments.addAll({'configFilePath': file.path});
       } else if (Platform.isIOS) {
         assert(iosConfig != null, 'iOS config can not be null');
-        arguments = <String, dynamic>{
+        arguments.addAll({
           'clientId': clientId,
           'authority': iosConfig!.authority,
           'authMiddleware': iosConfig.authMiddleware.name,
           'tenantType': iosConfig.tenantType.name,
-          'loginHint': loginHint,
-        };
+        });
       }
 
       await _methodChannel.invokeMethod('initialize', arguments);
@@ -63,10 +61,21 @@ class MsalAuth {
 
   /// Acquire a token interactively for the given [scopes]
   /// return [UserAdModel] contains user information but token and expiration date
-  Future<MsalUser?> acquireToken() async {
+  Future<MsalUser?> acquireToken({
+    Prompt prompt = Prompt.whenRequired,
+
+    /// It should be valid "email id" or "username" or "unique identifier".
+    /// Value is used as an identity provider to pre-fill a user's
+    /// email address or username in the login form.
+    String? loginHint,
+  }) async {
     try {
       assert(_scopes.isNotEmpty, 'Scopes can not be empty');
-      final arguments = <String, dynamic>{'scopes': _scopes};
+      final arguments = <String, dynamic>{
+        'scopes': _scopes,
+        'prompt': prompt.name,
+        'loginHint': loginHint,
+      };
       final json = await _methodChannel.invokeMethod('acquireToken', arguments);
       if (json != null) {
         return MsalUser.fromJson(jsonDecode(json));

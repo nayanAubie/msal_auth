@@ -1,7 +1,8 @@
 group 'com.example.msal_auth'
 version '1.0-SNAPSHOT'
 
-def msalVersion = "5.1.+"
+def msalVersion = "5.7.+"
+
 if (project.hasProperty("distMsalVersion")) {
     msalVersion = distMsalVersion
 }
@@ -54,10 +55,11 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
     }
 }
 
 dependencies {
     implementation "com.microsoft.identity.client:msal:${msalVersion}"
+    implementation 'com.google.code.gson:gson:2.11.0'
 }
