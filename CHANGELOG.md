@@ -1,3 +1,8 @@
+## 2.2.0
+
+- Moved `loginHint` param to `acquireToken` function.
+- Added support of `Prompt` option in `acquireToken` function.
+
 ## 2.1.1
 
 - Updated README for login process stuck on iOS due to missing callback handling. issue#26, issue#33
