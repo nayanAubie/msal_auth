@@ -11,12 +11,10 @@ Microsoft Authentication 🔐 Library for Flutter.
   - Browser
   - In-App WebView
 - Supports authentication against Entra ID (formerly Azure Active Directory)/Microsoft Account tenants as well as Azure Active Directory (AD) B2C tenants
-- Get auth token silently
-- Get auth token interactive
+- Get auth token silently & interactive
+- Login hint & prompt type option
+- Microsoft User information with auth token
 - Logout
-- Auth Token information
-- Microsoft User information
-
 ---
 
 To implement `MSAL` in `Flutter`, You need to setup an app in `Azure Portal` and required some of the platform specific configurations.
@@ -205,7 +203,6 @@ final msalAuth = await MsalAuth.createPublicClientApplication(
     'https://graph.microsoft.com/user.read',
     // Add other scopes here if required.
   ],
-  loginHint: '<EMAIL ID (Optional)>'
   androidConfig: AndroidConfig(
     configFilePath: 'assets/msal_config.json',
     tenantId: '<MICROSOFT_TENANT_ID (Optional)>',
@@ -229,7 +226,12 @@ final msalAuth = await MsalAuth.createPublicClientApplication(
 - This code is responsible to open Microsoft login page in given middleware and provide token on successful login.
 
 ```Dart
-final user = await msalAuth.acquireToken();
+final user = await msalAuth.acquireToken(
+  // UI option for authentication, default is [Prompt.whenRequired]
+  prompt: Prompt.login,
+  // Provide 'loginHint' if you have.
+  loginHint: '<Email Id / Username / Unique Identifier>'
+);
 log('User data: ${user?.toJson()}');
 ```
 
