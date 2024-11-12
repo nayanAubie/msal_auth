@@ -1,3 +1,6 @@
+## 2.2.1
+- Added keychain group `com.microsoft.adalcache` in `example/ios` and updated instruction in README.
+
 ## 2.2.0
 
 - Moved `loginHint` param to `acquireToken` function.
