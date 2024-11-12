@@ -126,6 +126,10 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
 
 - Add a new keychain group `com.microsoft.adalcache` to your project capabilities.
 
+  ![iOS Keychain Sharing](/Screenshots/iOS-Keychain-Sharing.png)
+
+> Without this, your app will not able to open [Microsoft Authenticator] app if you use it as a middleware. also, the `logout` method will throw an exception due to not find the account from cache.
+
 ### `Info.plist` Modification
 
 - Add your application's redirect URI scheme to your `Info.plist` file:
