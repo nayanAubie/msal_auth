@@ -4,43 +4,29 @@ import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.MethodChannel
 
 class MsalAuthPlugin : FlutterPlugin, ActivityAware {
 
-    private var mTAG = "MsalAuthPlugin"
-    private var msalAuthImpl: MsalAuthImpl? = null
-    private var msal: Msal? = null
+    private var mTAG = MsalAuthPlugin::class.simpleName
+    private lateinit var msalAuthHandler: MsalAuthHandler
+    private lateinit var msal: MsalAuth
+
+    private lateinit var channel: MethodChannel
 
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        msal = Msal(binding.applicationContext, null)
-        msalAuthImpl = MsalAuthImpl(msal!!)
-        msalAuthImpl.let {
-            it?.setMethodCallHandler(binding.binaryMessenger)
-        }
+        msal = MsalAuth(binding.applicationContext)
+        msalAuthHandler = MsalAuthHandler(msal)
+        msalAuthHandler.initialize(binding.binaryMessenger)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        if (msalAuthImpl == null) {
-            Log.wtf(mTAG, "Engine already detached.")
-            return
-        }
-
-        msalAuthImpl.let {
-            it?.stopMethodCallHandler()
-        }
-        msalAuthImpl = null
-        msal = null
+        channel.setMethodCallHandler(null)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        if (msalAuthImpl == null) {
-            Log.wtf(mTAG, "Implementation is not initialized.")
-            return
-        }
-        msal.let {
-            it?.setActivity(binding.activity)
-        }
+        msal.setActivity(binding.activity)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -52,9 +38,6 @@ class MsalAuthPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onDetachedFromActivity() {
-        if (msalAuthImpl == null) {
-            Log.wtf(mTAG, "Implementation is not initialized.")
-            return
-        }
+        Log.d(mTAG, "Detached from activity")
     }
 }

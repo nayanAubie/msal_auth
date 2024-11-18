@@ -1,0 +1,4 @@
+enum AccountMode {
+  single,
+  multiple;
+}

@@ -1,5 +1,4 @@
 {
-  "redirect_uri": "msauth://com.example.msal_auth_example/<BASE64_ENCODED_PACKAGE_SIGNATURE>",
   "authorities" : [
     {
       "type": "AAD",

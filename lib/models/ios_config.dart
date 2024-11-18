@@ -1,23 +1,25 @@
+import 'account_mode.dart';
+
 /// Configuration class for iOS platform.
 class IosConfig {
   /// Microsoft authority.
-  final String authority;
+  final String? authority;
 
   /// Middleware that is used to perform authentication.
-  final AuthMiddleware authMiddleware;
+  final Broker broker;
 
   /// The type of tenant to authenticate against.
-  final TenantType tenantType;
+  final AuthorityType authorityType;
 
   IosConfig({
     required this.authority,
-    this.authMiddleware = AuthMiddleware.msAuthenticator,
-    this.tenantType = TenantType.entraIDAndMicrosoftAccount,
+    this.broker = Broker.msAuthenticator,
+    this.authorityType = AuthorityType.aad,
   });
 }
 
-/// Types of middleware that is used while authenticating user.
-enum AuthMiddleware {
+/// Types of broker that is used while authenticating user.
+enum Broker {
   /// MS Authenticator app will be used if installed on a device.
   msAuthenticator,
 
@@ -29,10 +31,10 @@ enum AuthMiddleware {
 }
 
 /// Types of tenant to authenticate against.
-enum TenantType {
+enum AuthorityType {
   /// Entra ID (formerly Azure Active Directory) and Microsoft Account.
-  entraIDAndMicrosoftAccount,
+  aad,
 
   /// Azure Active Directory B2C.
-  azureADB2C
+  b2c
 }

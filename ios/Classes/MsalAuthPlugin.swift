@@ -1,412 +1,488 @@
 import Flutter
-import UIKit
 import MSAL
+import UIKit
 
 public class MsalAuthPlugin: NSObject, FlutterPlugin {
-    
-    static var clientId : String = ""
-    static var authority : String = ""
-    static var authMiddleware : String = ""
-    static var tenantType : String = ""
-    
-    static let kCurrentAccountIdentifier = "MSALCurrentAccountIdentifier"
-    
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "msal_auth", binaryMessenger: registrar.messenger())
+        let channel = FlutterMethodChannel(
+            name: "msal_auth", binaryMessenger: registrar.messenger())
         let instance = MsalAuthPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
-    
-    
-    
-    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult)
-    {
-        //get the arguments as a dictionary
-        guard let dict = call.arguments as? NSDictionary else { return }
-        let scopes = dict["scopes"] as? [String] ?? [String]()
-        let clientId = dict["clientId"] as? String ?? ""
-        let authority = dict["authority"] as? String ?? ""
-        let authMiddleware = dict["authMiddleware"] as? String ?? ""
-        let tenantType = dict["tenantType"] as? String ?? ""
-        let promptArg = dict["prompt"] as? String ?? ""
-        let loginHint = dict["loginHint"] as? String ?? ""
-        
-        let promptType : MSALPromptType = {
-            switch promptArg {
-            case "selectAccount": return .selectAccount
-            case "login": return .login
-            case "consent": return .consent
-            case "create": return .create
-            case "whenRequired": return .promptIfNecessary
-            default: return .default
+
+    public func handle(
+        _ call: FlutterMethodCall, result: @escaping FlutterResult
+    ) {
+        switch call.method {
+        case "createSingleAccountPca", "createMultipleAccountPca":
+            guard let dict = call.arguments as? NSDictionary,
+                  let pcaType: PublicClientApplicationType = {
+                      switch call.method {
+                      case "createSingleAccountPca": return .single
+                      default: return .multiple
+                      }
+                  }(),
+                let clientId = dict["clientId"] as? String,
+                let broker = dict["broker"] as? String,
+                let authorityType = dict["authorityType"] as? String
+            else {
+                result(
+                    FlutterError(
+                        code: "AUTH_ERROR", message: "Argument not found",
+                        details: nil))
+                return
             }
-        }()
-        
-        switch( call.method ){
-        case "initialize": initialize(clientId: clientId, authority: authority, authMiddleware: authMiddleware, tenantType: tenantType, result: result)
-        case "acquireToken": acquireToken(scopes: scopes, promptType: promptType, loginHint: loginHint, result: result)
-        case "acquireTokenSilent": acquireTokenSilent(scopes: scopes, result: result)
-        case "logout": logout(result: result)
+
+            MsalAuth.broker = broker
+            let authority = dict["authority"] as? String
+
+            createPublicClientApplication(
+                pcaType: pcaType,
+                clientId: clientId, authority: authority,
+                authorityType: authorityType,
+                result: result)
+        case "acquireToken":
+            guard let dict = call.arguments as? NSDictionary,
+                let scopes = dict["scopes"] as? [String],
+                let prompt = dict["prompt"] as? String,
+                let promptType: MSALPromptType = {
+                    switch prompt {
+                    case "selectAccount": return .selectAccount
+                    case "login": return .login
+                    case "consent": return .consent
+                    case "create": return .create
+                    case "whenRequired": return .promptIfNecessary
+                    default: return .default
+                    }
+                }()
+            else {
+                result(
+                    FlutterError(
+                        code: "AUTH_ERROR",
+                        message: "Argument not found acquire token",
+                        details: nil))
+                return
+            }
+            
+            let loginHint = dict["loginHint"] as? String
+            acquireToken(
+                scopes: scopes, promptType: promptType, loginHint: loginHint,
+                result: result)
+        case "acquireTokenSilent":
+            guard let dict = call.arguments as? NSDictionary,
+                let scopes = dict["scopes"] as? [String]
+            else {
+                result(
+                    FlutterError(
+                        code: "AUTH_ERROR", message: "Argument not found",
+                        details: nil))
+                return
+            }
+            let identifier = dict["identifier"] as? String
+            acquireTokenSilent(
+                scopes: scopes, identifier: identifier, result: result)
+
+        case "currentAccount": getCurrentAccount(result: result)
+        case "signOut": signOut(result: result)
+        case "getAccount":
+            guard let identifier = call.arguments as? String else {
+                result(
+                    FlutterError(
+                        code: "AUTH_ERROR", message: "Argument not found",
+                        details: nil))
+                return
+            }
+            getAccount(identifier: identifier, result: result)
+        case "getAccounts": getAccounts(result: result)
+        case "removeAccount":
+            guard let identifier = call.arguments as? String else {
+                result(
+                    FlutterError(
+                        code: "AUTH_ERROR", message: "Argument not found",
+                        details: nil))
+                return
+            }
         default: result(FlutterMethodNotImplemented)
         }
     }
-    
-    
-    fileprivate func getResultLogin(_ authResult: MSALResult) -> String?{
-        // Get access token from result
-        
-        var accountMap = authResult.account.accountClaims ?? [String: Any]()
-        accountMap["access_token"] = authResult.accessToken
-        accountMap["id_token"] = authResult.idToken
-        accountMap["exp"] = Int(floor(authResult.expiresOn!.timeIntervalSince1970 * 1000.0))
-        
-        let signedInAccount = authResult.account
-        self.currentAccountIdentifier = signedInAccount.homeAccountId?.identifier
-        
-        do{
-            
-            let jsonData = try JSONSerialization.data(withJSONObject: accountMap, options: .prettyPrinted)
-            if let jsonString = String(data: jsonData, encoding: .utf8){
-                return jsonString
+
+    private func createPublicClientApplication(
+        pcaType: PublicClientApplicationType,
+        clientId: String, authority: String?,
+        authorityType: String,
+        result: @escaping FlutterResult
+    ) {
+        var pcaConfig: MSALPublicClientApplicationConfig!
+
+        if (authority != nil) {
+            guard let authorityUrl = URL(string: authority!) else {
+                result(
+                    FlutterError(
+                        code: "AUTH_ERROR", message: "invalid authority URL has been provided",
+                        details: nil))
+                return
             }
             
-        }catch {
-            print(error.localizedDescription)
+            do {
+                switch authorityType {
+                case "b2c":
+                    let b2cAuthority = try MSALB2CAuthority(url: authorityUrl)
+                    pcaConfig = MSALPublicClientApplicationConfig(
+                        clientId: clientId, redirectUri: nil,
+                        authority: b2cAuthority)
+                    pcaConfig.knownAuthorities = [b2cAuthority]
+                default:
+                    let defaultAuthority = try MSALAuthority(url: authorityUrl)
+                    pcaConfig = MSALPublicClientApplicationConfig(
+                        clientId: clientId, redirectUri: nil,
+                        authority: defaultAuthority)
+                }
+            } catch {
+                result(
+                    FlutterError(
+                        code: "AUTH_ERROR", message: "Error in authority configuration",
+                        details: nil))
+            }
         }
-        return nil
+        else {
+            pcaConfig = MSALPublicClientApplicationConfig(clientId: clientId)
+        }
+
+        if let application = try? MSALPublicClientApplication(
+            configuration: pcaConfig)
+        {
+            MsalAuth.publicClientApplication = application
+            MsalAuth.pcaType = pcaType
+            result(true)
+        } else {
+            result(
+                FlutterError(
+                    code: "AUTH_ERROR",
+                    message: "Unable to create MSALPublicClientApplication",
+                    details: nil))
+        }
     }
-    
-    private func initialize(clientId: String, authority: String, authMiddleware: String, tenantType: String, result: @escaping FlutterResult)
-    {
-        // validate clientId
-        if(clientId.isEmpty){
-            result(FlutterError(code:"AUTH_ERROR", message: "Call must include a clientId", details: nil))
+
+    private func acquireToken(
+        scopes: [String], promptType: MSALPromptType, loginHint: String?,
+        result: @escaping FlutterResult
+    ) {
+        guard let viewController = UIViewController.keyViewController else {
             return
         }
-        
-        MsalAuthPlugin.clientId = clientId;
-        MsalAuthPlugin.authority = authority;
-        MsalAuthPlugin.authMiddleware = authMiddleware;
-        MsalAuthPlugin.tenantType = tenantType;
-        if (authMiddleware != "msAuthenticator") {
-            MSALGlobalConfig.brokerAvailability = .none
-        }
-        result(true)
-    }
-}
-//MARK: - Get token
-extension MsalAuthPlugin {
-    
-    private func acquireToken(scopes: [String], promptType: MSALPromptType, loginHint: String?, result: @escaping FlutterResult)
-    {
-        if let application = getApplication(result: result){
-            
-            guard let viewController = UIViewController.keyViewController else { return }
-            let webViewParameters = MSALWebviewParameters(authPresentationViewController: viewController)
-            if #available(iOS 13.0, *) {
-                webViewParameters.prefersEphemeralWebBrowserSession = true
-                webViewParameters.webviewType = MsalAuthPlugin.authMiddleware != "webView" ? MSALWebviewType.safariViewController : MSALWebviewType.wkWebView
+        let webViewParameters = MSALWebviewParameters(
+            authPresentationViewController: viewController)
+
+        MSALGlobalConfig.brokerAvailability = .auto
+        if #available(iOS 13.0, *) {
+            webViewParameters.prefersEphemeralWebBrowserSession = true
+            switch MsalAuth.broker {
+            case "webView":
+                webViewParameters.webviewType = .wkWebView
+                MSALGlobalConfig.brokerAvailability = .none
+            case "safariBrowser":
+                webViewParameters.webviewType = .safariViewController
+                MSALGlobalConfig.brokerAvailability = .none
+            default:
+                webViewParameters.webviewType = .default
             }
-            
-            removeAccount(application)
-            
-            let interactiveParameters = MSALInteractiveTokenParameters(scopes: scopes, webviewParameters: webViewParameters)
-            
-            interactiveParameters.promptType = promptType
-            interactiveParameters.loginHint = loginHint
-                        
-            application.acquireToken(with: interactiveParameters, completionBlock: { (msalresult, error) in
+        }
+
+        let tokenParams = MSALInteractiveTokenParameters(
+            scopes: scopes, webviewParameters: webViewParameters)
+
+        tokenParams.promptType = promptType
+        tokenParams.loginHint = loginHint
+
+        var account: MSALAccount?
+
+        if MsalAuth.pcaType == PublicClientApplicationType.single {
+            if let currentAccount = getCurrentAccount() {
+                account = currentAccount
+            }
+        }
+
+        if account != nil {
+            acquireTokenSilent(
+                scopes: scopes, identifier: account?.identifier, result: result)
+            return
+        }
+
+        MsalAuth.publicClientApplication.acquireToken(
+            with: tokenParams,
+            completionBlock: { (msalresult, error) in
                 guard let authResult = msalresult, error == nil else {
-                    
+
                     guard let error = error as NSError? else { return }
-                    
+
                     if error.domain == MSALErrorDomain,
-                       let errorCode = MSALError(rawValue: error.code)
+                        let errorCode = MSALError(rawValue: error.code)
                     {
                         switch errorCode
                         {
                         case .userCanceled:
-                            result(FlutterError(code: "USER_CANCELED", message: error.localizedDescription, details: nil))
-                            
+                            result(
+                                FlutterError(
+                                    code: "USER_CANCELED",
+                                    message: error.localizedDescription,
+                                    details: nil))
+
                         default:
-                            result(FlutterError(code: "AUTH_ERROR", message: error.localizedDescription, details: nil))
+                            result(
+                                FlutterError(
+                                    code: "AUTH_ERROR",
+                                    message: error.localizedDescription,
+                                    details: nil))
                         }
                     }
                     return
                 }
-                
-                result(self.getResultLogin(authResult))
+
+                result(self.getAuthResult(authResult))
             })
+    }
+
+    private func acquireTokenSilent(
+        scopes: [String], identifier: String? = nil,
+        result: @escaping FlutterResult
+    ) {
+        var account: MSALAccount!
+
+        if MsalAuth.pcaType == PublicClientApplicationType.single {
+            account = getCurrentAccount()
+        } else {
+            account = getAccount(identifier: identifier!)
         }
-        else {
+
+        guard let account else {
+            result(
+                FlutterError(
+                    code: "AUTH_ERROR",
+                    message: "Error retrieving a current account guard",
+                    details: nil))
             return
         }
-        
-    }
-}
-//MARK: - Get token silent
-extension MsalAuthPlugin {
-    
-    private func acquireTokenSilent(scopes: [String], result: @escaping FlutterResult)
-    {
-        if let application = getApplication(result: result){
-            var account : MSALAccount!
-            
-            do{
-                guard let currentAccount = try currentAccount(result: result) else{
-                    let error = FlutterError(code: "AUTH_ERROR",  message: "No account is available to acquire token silently for", details: nil)
-                    result(error)
-                    return
-                }
-                account = currentAccount
-            }
-            catch{
-                result(FlutterError(code: "AUTH_ERROR",  message: "Error retrieving an existing account", details: nil))
-            }
-            
-            let silentParameters = MSALSilentTokenParameters(scopes: scopes, account: account)
-            
-            application.acquireTokenSilent(with: silentParameters, completionBlock: { (msalresult, error) in
-                
+
+        let silentParams = MSALSilentTokenParameters(
+            scopes: scopes, account: account)
+
+        MsalAuth.publicClientApplication.acquireTokenSilent(
+            with: silentParams,
+            completionBlock: { (msalresult, error) in
+
                 guard let authResult = msalresult, error == nil else {
-                    
+
                     guard let error = error as NSError? else { return }
-                    
+
                     if error.domain == MSALErrorDomain,
-                       let errorCode = MSALError(rawValue: error.code)
+                        let errorCode = MSALError(rawValue: error.code)
                     {
                         switch errorCode
                         {
                         case .interactionRequired:
-                            result(FlutterError(code: "UI_REQUIRED", message: error.localizedDescription, details: nil))
-                            
+                            result(
+                                FlutterError(
+                                    code: "UI_REQUIRED",
+                                    message: error.localizedDescription,
+                                    details: nil))
+
                         case .userCanceled:
-                            result(FlutterError(code: "USER_CANCELED", message: error.localizedDescription, details: nil))
-                            
+                            result(
+                                FlutterError(
+                                    code: "USER_CANCELED",
+                                    message: error.localizedDescription,
+                                    details: nil))
+
                         default:
-                            result(FlutterError(code: "AUTH_ERROR", message: error.localizedDescription, details: nil))
+                            result(
+                                FlutterError(
+                                    code: "AUTH_ERROR",
+                                    message: error.localizedDescription,
+                                    details: nil))
                         }
                     }
                     return
                 }
-                
-                result(self.getResultLogin(authResult))
-                
+
+                result(self.getAuthResult(authResult))
             })
-        }
-        else {
-            return
-        }
     }
-}
-//MARK: - Get logout remove or count cachedAccounts
-extension MsalAuthPlugin {
-    
-    fileprivate func removeAccount(_ application: MSALPublicClientApplication) {
-        do{
-            var msalAcount:MSALAccount?
-            if let accountIndetifier = currentAccountIdentifier {
-                let parameters = MSALAccountEnumerationParameters(identifier: accountIndetifier)
-                application.accountsFromDevice(for: parameters, completionBlock:{(accounts, error) in
-                    if(accounts != nil && !accounts!.isEmpty){
-                        msalAcount = accounts?.first;
-                    }
-                    if error != nil
-                    {
-                        print(error?.localizedDescription ?? "N/A")
-                    }
-                })
-            }
-            
-            if let account = msalAcount {
-                try application.remove(account)
-                
-            }
-        }catch{
-            return
-        }
-    }
-    
-    fileprivate func signOut(_ application: MSALPublicClientApplication, _ account: MSALAccount, result: @escaping FlutterResult) {
-        let viewController: UIViewController = UIViewController.keyViewController!
-        let webviewParameters = MSALWebviewParameters(authPresentationViewController: viewController)
-        webviewParameters.webviewType = MSALWebviewType.wkWebView
-        
-        let signoutParameters = MSALSignoutParameters(webviewParameters: webviewParameters)
-        
-        application.signout(with: account, signoutParameters: signoutParameters, completionBlock: {(success, error) in
-            
-            if error != nil {
-                result(FlutterError(code: "AUTH_ERROR", message: "Signout failed", details: nil))
-                return
-            }
-            // Sign out completed successfully
-            result(true)
-        })
-    }
-    
-    private func logout(result: @escaping FlutterResult)
+
+    @discardableResult
+    private func getCurrentAccount(result: FlutterResult? = nil) -> MSALAccount?
     {
-        
-        if let application = getApplication(result: result){
-            do{
-                guard let accountToDelete = try currentAccount(result: result) else{
-                    result(FlutterError(code: "AUTH_ERROR", message: "Unable get remove accounts Null", details: nil))
-                    return
-                }
-                
-                clearCurrentAccount()
-                try application.remove(accountToDelete)
-                removeAccount(application)
-                signOut(application, accountToDelete, result: result)
-            } catch {
-                result(FlutterError(code: "AUTH_ERROR", message: "Unable get remove accounts", details: nil))
+        var account: MSALAccount!
+
+        MsalAuth.publicClientApplication.getCurrentAccount(
+            with: MSALParameters()
+        ) { current, previous, error in
+            if let current {
+                account = current
+                result?(self.getCurrentAccountDic(current))
                 return
             }
-            
-            return
-        }
-        else {
-            result(FlutterError(code: "AUTH_ERROR", message: "Unable Application", details: nil))
-            return
-        }
-    }
-    
-    
-    var currentAccountIdentifier: String? {
-        get {
-            return UserDefaults.standard.string(forKey: MsalAuthPlugin.kCurrentAccountIdentifier)
-        }
-        set (accountIdentifier) {
-            // The identifier in the MSALAccount is the key to retrieve this user from
-            // the cache in the future. Save this piece of information in a place you can
-            // easily retrieve in your app. In this case we're going to store it in
-            // NSUserDefaults.
-            UserDefaults.standard.set(accountIdentifier, forKey: MsalAuthPlugin.kCurrentAccountIdentifier)
-        }
-    }
-    
-    @discardableResult func currentAccount(result: @escaping FlutterResult) throws -> MSALAccount? {
-        // We retrieve our current account by checking for the accountIdentifier that we stored in NSUserDefaults when
-        // we first signed in the account.
-        guard let accountIdentifier = currentAccountIdentifier else {
-            // If we did not find an identifier then throw an error indicating there is no currently signed in account.
-            result(FlutterError(code: "AUTH_ERROR", message: "Account identifier", details: nil))
-            return nil
-        }
-        var acc: MSALAccount?
-        if let application = getApplication(result: result){
-            do {
-                acc = try application.account(forIdentifier: accountIdentifier)
-            } catch let error as NSError {
-                result(FlutterError(code: "AUTH_ERROR", message: "Account identifier", details: error.localizedDescription))
+            if let error {
+                result?(
+                    FlutterError(
+                        code: "error", message: error.localizedDescription,
+                        details: nil))
+                return
             }
+            result?(
+                FlutterError(
+                    code: "error", message: "No current account", details: nil))
         }
-        guard let account = acc else {
-            clearCurrentAccount()
-            return nil
-        }
-        
-        
         return account
     }
-    
-    
-    func clearCurrentAccount() {
-        // Leave around the account identifier as the last piece of state to clean up as you will probably need
-        // it to clean up user-specific state
-        UserDefaults.standard.removeObject(forKey: MsalAuthPlugin.kCurrentAccountIdentifier)
-    }
-    
-}
-//MARK: - get Application config
-extension MsalAuthPlugin {
-    private func getApplication(result: @escaping FlutterResult) -> MSALPublicClientApplication?
-    {
-        if(MsalAuthPlugin.clientId.isEmpty){
-            result(FlutterError(code: "AUTH_ERROR", message: "Client must be initialized before attempting to acquire a token.", details: nil))
-            return nil
-        }
-        
-        var config: MSALPublicClientApplicationConfig
-        
-        //setup the config, using authority if it is set, or defaulting to msal's own implementation if it's not
-        if !MsalAuthPlugin.authority.isEmpty
-        {
-            //try creating the msal aad authority object
-            do{
-                //create authority url
-                guard let authorityUrl = URL(string: MsalAuthPlugin.authority) else{
-                    result(FlutterError(code: "AUTH_ERROR", message: "invalid authority", details: nil))
-                    return nil
-                }
-                
-                //create the msal authority and configuration based on the tenant type
-                switch MsalAuthPlugin.tenantType {
-                    case "entraIDAndMicrosoftAccount":
-                        let msalAuthority = try MSALAuthority(url: authorityUrl)
-                        config = MSALPublicClientApplicationConfig(clientId: MsalAuthPlugin.clientId, redirectUri: nil, authority: msalAuthority)
-                    case "azureADB2C":
-                        let msalB2CAuthority = try MSALB2CAuthority(url: authorityUrl)
-                        config = MSALPublicClientApplicationConfig(clientId: MsalAuthPlugin.clientId, redirectUri: nil, authority: msalB2CAuthority)
-                        // To allow MSAL for iOS and macOS to authenticate against an Azure AD B2C tenant, its authority needs to be set as a "known authority".
-                        // https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#b2c
-                        config.knownAuthorities = [msalB2CAuthority];
-                    default:
-                        result(FlutterError(code: "AUTH_ERROR", message: "invalid tenant type", details: nil))
-                        return nil
-                }
 
-            } catch {
-                //return error if exception occurs
-                result(FlutterError(code: "AUTH_ERROR", message: "invalid authority", details: nil))
-                return nil
+    private func signOut(result: @escaping FlutterResult) {
+        if let currentAccount = getCurrentAccount() {
+            MsalAuth.publicClientApplication.signout(
+                with: currentAccount, signoutParameters: MSALSignoutParameters()
+            ) { success, error in
+                guard let error else {
+                    result(success)
+                    return
+                }
+                result(
+                    FlutterError(
+                        code: "AUTH_ERROR",
+                        message: error.localizedDescription,
+                        details: nil))
             }
+        } else {
+            result(
+                FlutterError(
+                    code: "AUTH_ERROR",
+                    message: "Error retrieving a current account",
+                    details: nil))
         }
-        else
-        {
-            config = MSALPublicClientApplicationConfig(clientId: MsalAuthPlugin.clientId)
-        }
-        
-        //create the application and return it
-        if let application = try? MSALPublicClientApplication(configuration: config)
-        {
-            return application
-        }else{
-            result(FlutterError(code: "AUTH_ERROR", message: "Unable to create MSALPublicClientApplication", details: nil))
+    }
+
+    @discardableResult
+    private func getAccount(identifier: String, result: FlutterResult? = nil)
+        -> MSALAccount?
+    {
+        do {
+            return try MsalAuth.publicClientApplication.account(
+                forIdentifier: identifier)
+        } catch {
+            result?(
+                FlutterError(
+                    code: "AUTH_ERROR",
+                    message: "Error retrieving a current account",
+                    details: nil))
             return nil
         }
+    }
+
+    private func getAccounts(result: @escaping FlutterResult) {
+        do {
+            let accounts = try MsalAuth.publicClientApplication.allAccounts()
+            result(accounts.map { getCurrentAccountDic($0) })
+        } catch {
+            result(
+                FlutterError(
+                    code: "AUTH_ERROR",
+                    message: "Error retrieving all accounts",
+                    details: nil))
+        }
+    }
+
+    private func removeAccount(
+        identifier: String, result: @escaping FlutterResult
+    ) {
+        let account = getAccount(identifier: identifier)
+
+        guard let account else {
+            result(
+                FlutterError(
+                    code: "AUTH_ERROR",
+                    message: "No account to remove",
+                    details: nil))
+            return
+        }
+
+        do {
+            try MsalAuth.publicClientApplication.remove(account)
+            result(true)
+        } catch {
+            result(
+                FlutterError(
+                    code: "AUTH_ERROR",
+                    message: "No account to remove",
+                    details: nil))
+        }
+    }
+
+    fileprivate func getAuthResult(_ authResult: MSALResult) -> [String: Any] {
+        var authResultDic = [String: Any]()
+        authResultDic["accessToken"] = authResult.accessToken
+        authResultDic["authenticationScheme"] = authResult.authenticationScheme
+        authResultDic["expiresOn"] = Int(
+            authResult.expiresOn!.timeIntervalSince1970 * 1000.0)
+        authResultDic["tenantId"] = authResult.tenantProfile.tenantId
+        authResultDic["scopes"] = authResult.scopes
+        authResultDic["correlationId"] = authResult.correlationId.uuidString
+        authResultDic["account"] = getCurrentAccountDic(authResult.account)
+
+        return authResultDic
+    }
+
+    fileprivate func getCurrentAccountDic(_ account: MSALAccount) -> [String:
+        Any]
+    {
+        var accountDic = [String: Any]()
+        accountDic["id"] = account.identifier
+        accountDic["username"] = account.username
+        accountDic["name"] = account.accountClaims?["name"]
+        return accountDic
     }
 }
 
 //MARK: - UIViewController
 extension UIViewController {
-    
-    
-    static var keyViewController: UIViewController?{
-        if #available(iOS 15, *){
-            return (UIApplication.shared.connectedScenes.filter({$0.activationState == .foregroundActive}).compactMap({$0 as? UIWindowScene}).first?.windows.filter({$0.isKeyWindow}).first?.rootViewController)!
-        }else{
-            return UIApplication.shared.windows.first(where: {$0.isKeyWindow})?.rootViewController
+    static var keyViewController: UIViewController? {
+        if #available(iOS 15, *) {
+            return
+                (UIApplication.shared.connectedScenes.filter({
+                    $0.activationState == .foregroundActive
+                }).compactMap({ $0 as? UIWindowScene }).first?.windows.filter({
+                    $0.isKeyWindow
+                }).first?.rootViewController)!
+        } else {
+            return UIApplication.shared.windows.first(where: { $0.isKeyWindow }
+            )?.rootViewController
         }
     }
-    
 }
 
-extension WKWebView {
-    func cleanAllCookies() {
-        HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
-        print("All cookies deleted")
-        
-        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
-            records.forEach { record in
-                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
-                print("Cookie ::: \(record) deleted")
-            }
-        }
-    }
-    
-    func refreshCookies() {
-        self.configuration.processPool = WKProcessPool()
+extension MsalAuthPlugin {
+    fileprivate var noAccountError: FlutterError {
+        return FlutterError(
+            code: "no_account", message: "No active account found", details: nil
+        )
     }
 }
+
+//extension WKWebView {
+//    func cleanAllCookies() {
+//        HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
+//        print("All cookies deleted")
+//
+//        WKWebsiteDataStore.default().fetchDataRecords(
+//            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()
+//        ) { records in
+//            records.forEach { record in
+//                WKWebsiteDataStore.default().removeData(
+//                    ofTypes: record.dataTypes, for: [record],
+//                    completionHandler: {})
+//                print("Cookie ::: \(record) deleted")
+//            }
+//        }
+//    }
+//
+//    func refreshCookies() {
+//        self.configuration.processPool = WKProcessPool()
+//    }
+//}
