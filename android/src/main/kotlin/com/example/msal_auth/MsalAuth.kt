@@ -28,6 +28,10 @@ import com.microsoft.identity.client.exception.MsalUnsupportedBrokerException
 import com.microsoft.identity.client.exception.MsalUserCancelException
 import io.flutter.plugin.common.MethodChannel
 
+/**
+ * Class that manages every async callbacks for method that is called from auth handler.
+ * Sets the appropriate result for Dart.
+ */
 class MsalAuth(internal val context: Context) {
 
     internal lateinit var activity: Activity
@@ -40,10 +44,19 @@ class MsalAuth(internal val context: Context) {
         this.activity = activity
     }
 
+    /**
+     * Checks if the public client application is initialized.
+     */
     internal fun isPcaInitialized(): Boolean = ::iPublicClientApplication.isInitialized
 
+    /**
+     * Gets the account mode of the public client application.
+     */
     internal fun getAccountMode(): AccountMode = iPublicClientApplication.configuration.accountMode
 
+    /**
+     * Listener for creating a single account public client application.
+     */
     internal fun singleAccountApplicationCreatedListener(result: MethodChannel.Result): ISingleAccountApplicationCreatedListener {
         return object : ISingleAccountApplicationCreatedListener {
             override fun onCreated(application: ISingleAccountPublicClientApplication) {
@@ -58,6 +71,9 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Listener for creating a multiple account public client application.
+     */
     internal fun multipleAccountApplicationCreatedListener(result: MethodChannel.Result): IMultipleAccountApplicationCreatedListener {
         return object : IMultipleAccountApplicationCreatedListener {
             override fun onCreated(application: IMultipleAccountPublicClientApplication) {
@@ -72,6 +88,9 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Authentication callback for acquiring tokens using interactively.
+     */
     internal fun authenticationCallback(result: MethodChannel.Result): AuthenticationCallback {
         return object : AuthenticationCallback {
             override fun onSuccess(authenticationResult: IAuthenticationResult) {
@@ -88,6 +107,9 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Authentication callback for acquiring tokens using silently.
+     */
     internal fun silentAuthenticationCallback(result: MethodChannel.Result): SilentAuthenticationCallback {
         return object : SilentAuthenticationCallback {
             override fun onSuccess(authenticationResult: IAuthenticationResult) {
@@ -100,6 +122,11 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Returns the current account map. this is used to send result to Dart.
+     *
+     * @param account Microsoft account
+     */
     private fun getCurrentAccountMap(account: IAccount): Map<String, Any?> {
         return mutableMapOf<String, Any?>().apply {
             put("id", account.id)
@@ -108,6 +135,12 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Sets the authentication result for Dart.
+     *
+     * @param authenticationResult authentication result received from token acquisition.
+     * @param result the result of the method call.
+     */
     private fun setAuthenticationResult(
         authenticationResult: IAuthenticationResult,
         result: MethodChannel.Result
@@ -127,6 +160,9 @@ class MsalAuth(internal val context: Context) {
         result.success(authResult)
     }
 
+    /**
+     * Callback for getting the current account.
+     */
     internal fun currentAccountCallback(result: MethodChannel.Result): CurrentAccountCallback {
         return object : CurrentAccountCallback {
             override fun onAccountLoaded(activeAccount: IAccount?) {
@@ -151,6 +187,9 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Callback for signing out the current account.
+     */
     internal fun signOutCallback(result: MethodChannel.Result): SignOutCallback {
         return object : SignOutCallback {
             override fun onSignOut() {
@@ -163,6 +202,9 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Callback for getting account details of given identifier.
+     */
     internal fun accountCallback(result: MethodChannel.Result): GetAccountCallback {
         return object : GetAccountCallback {
             override fun onTaskCompleted(account: IAccount) {
@@ -175,6 +217,9 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Callback for getting all accounts.
+     */
     internal fun loadAccountsCallback(result: MethodChannel.Result): LoadAccountsCallback {
         return object : LoadAccountsCallback {
             override fun onTaskCompleted(accounts: MutableList<IAccount>) {
@@ -187,6 +232,9 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Callback for removing an account.
+     */
     internal fun removeAccountCallback(result: MethodChannel.Result): RemoveAccountCallback {
         return object : RemoveAccountCallback {
             override fun onRemoved() {
@@ -199,6 +247,9 @@ class MsalAuth(internal val context: Context) {
         }
     }
 
+    /**
+     * Sets no current account exception.
+     */
     internal fun setNoCurrentAccountException(result: MethodChannel.Result) {
         setMsalException(
             MsalClientException(
@@ -208,6 +259,9 @@ class MsalAuth(internal val context: Context) {
         )
     }
 
+    /**
+     * Common [MsalException] handling function that returns error to Dart.
+     */
     internal fun setMsalException(exception: MsalException, result: MethodChannel.Result) {
         lateinit var errorCode: String
         var errorDetails: Any? = null

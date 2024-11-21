@@ -4,6 +4,9 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 
+/**
+ * This is the main entry point for the Flutter plugin.
+ */
 class MsalAuthPlugin : FlutterPlugin, ActivityAware {
     private lateinit var msalAuthHandler: MsalAuthHandler
     private lateinit var msal: MsalAuth

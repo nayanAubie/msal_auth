@@ -2,7 +2,11 @@ import Flutter
 import MSAL
 import UIKit
 
+/// This is the main entry point for the Flutter plugin.
+/// It manages the method calls from Flutter & sets results accordingly.
 public class MsalAuthPlugin: NSObject, FlutterPlugin {
+
+    /// Initializes method channel and register method call delegate.
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
             name: "msal_auth", binaryMessenger: registrar.messenger())
@@ -10,6 +14,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
+    /// Handles method calls received from Dart.
     public func handle(
         _ call: FlutterMethodCall, result: @escaping FlutterResult
     ) {
@@ -100,6 +105,13 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    /// Creates public client application object.
+    /// - Parameters:
+    ///   - pcaType: Public client application type.
+    ///   - clientId: Client ID from Azure Portal.
+    ///   - authority: Authority URL.
+    ///   - authorityType: Authority type.
+    ///   - result: Result of the method call.
     private func createPublicClientApplication(
         pcaType: PublicClientApplicationType,
         clientId: String, authority: String?,
@@ -142,10 +154,12 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         if let application = try? MSALPublicClientApplication(
             configuration: pcaConfig)
         {
+            // We will only have a public client application object. iOS does not have specific class for differnet account mode (Single & multiple). So we just assigned type that we receives from Dart and then call methods as per the type.
             MsalAuth.publicClientApplication = application
             MsalAuth.pcaType = pcaType
             result(true)
         } else {
+            // Sets initialization error. This is a custom exception created at Dart side.
             result(
                 FlutterError(
                     code: "PCA_INIT",
@@ -154,6 +168,12 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    /// Acquires token from public client application.
+    /// - Parameters:
+    ///   - scopes: Scopes to be requested.
+    ///   - promptType: Prompt type.
+    ///   - loginHint: Login hint.
+    ///   - result: Result of the method call.
     private func acquireToken(
         scopes: [String], promptType: MSALPromptType, loginHint: String?,
         result: @escaping FlutterResult
@@ -192,6 +212,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
 
         var account: MSALAccount?
 
+        // Call current account for single account mode. multiple account mode needs to give account identifier to get particular account.
         if MsalAuth.pcaType == PublicClientApplicationType.single {
             if let currentAccount = getCurrentAccount() {
                 account = currentAccount
@@ -220,6 +241,11 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             })
     }
 
+    /// Acquires token from public client application.
+    /// - Parameters:
+    ///   - scopes: Scopes to be requested.
+    ///   - identifier: Account identifier.
+    ///   - result: Result of the method call.
     private func acquireTokenSilent(
         scopes: [String], identifier: String? = nil,
         result: @escaping FlutterResult
@@ -262,6 +288,8 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             })
     }
 
+    /// Returns current account. used with single account mode.
+    /// - Parameter result: Result of the method call.
     @discardableResult
     private func getCurrentAccount(result: FlutterResult? = nil) -> MSALAccount?
     {
@@ -295,6 +323,8 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         return account
     }
 
+    /// Signs out from public client application. used with single account mode.
+    /// - Parameter result: Result of the method call.
     private func signOut(result: @escaping FlutterResult) {
         guard let pca = MsalAuth.publicClientApplication else {
             setPcaInitError(methodName: "signOut", result: result)
@@ -319,6 +349,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    /// Returns account with given identifier. used with multiple account mode.
+    /// - Parameters:
+    ///   - identifier: Account identifier.
+    ///   - result: Result of the method call.
     @discardableResult
     private func getAccount(identifier: String, result: FlutterResult? = nil)
         -> MSALAccount?
@@ -340,6 +374,8 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    /// Returns all accounts from public client application. used with multiple account mode.
+    /// - Parameter result: Result of the method call.
     private func getAccounts(result: @escaping FlutterResult) {
         guard let pca = MsalAuth.publicClientApplication else {
             setPcaInitError(methodName: "getAccounts", result: result)
@@ -354,6 +390,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    /// Removes account from public client application. used with multiple account mode.
+    /// - Parameters: 
+    ///   - identifier: Account identifier.
+    ///   - result: Result of the method call.
     private func removeAccount(
         identifier: String, result: @escaping FlutterResult
     ) {
@@ -375,6 +415,9 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
 
 // MARK: - MsalAuthPlugin
 extension MsalAuthPlugin {
+    /// Returns auth result dictionary. used to set result to Dart.
+    /// - Parameter authResult: Auth result.
+    /// - Returns: Auth result dictionary.
     fileprivate func getAuthResult(_ authResult: MSALResult) -> [String: Any] {
         var authResultDic = [String: Any]()
         authResultDic["accessToken"] = authResult.accessToken
@@ -391,6 +434,9 @@ extension MsalAuthPlugin {
         return authResultDic
     }
 
+    /// Returns current account dictionary.
+    /// - Parameter account: Current account.
+    /// - Returns: Current account dictionary.
     fileprivate func getCurrentAccountDic(_ account: MSALAccount) -> [String:
         Any]
     {
@@ -404,6 +450,10 @@ extension MsalAuthPlugin {
 
 // MARK: - MsalAuthPlugin
 extension MsalAuthPlugin {
+    /// Sets internal error to result due to provided invalid data from Dart.
+    /// - Parameters:
+    ///   - methodName: Method name.
+    ///   - result: Result of the method call.
     fileprivate func setInternalError(
         methodName: String, result: @escaping FlutterResult
     ) {
@@ -415,6 +465,10 @@ extension MsalAuthPlugin {
                 details: "invalid_data"))
     }
 
+    /// Sets public client application initialization error to result. This is a custom exception created at Dart side.
+    /// - Parameters:
+    ///   - methodName: Method name.
+    ///   - result: Result of the method call.
     fileprivate func setPcaInitError(
         methodName: String, result: @escaping FlutterResult
     ) {
@@ -426,6 +480,8 @@ extension MsalAuthPlugin {
                 details: nil))
     }
 
+    /// Sets no current account error to result.
+    /// - Parameter result: Result of the method call.
     fileprivate func setNoCurrentAccountError(result: @escaping FlutterResult) {
         result(
             FlutterError(
@@ -434,6 +490,10 @@ extension MsalAuthPlugin {
                 details: "no_account"))
     }
 
+    /// Common MSAL error handling function that returns error to Dart.
+    /// - Parameters:
+    ///   - error: MSAL error.
+    ///   - result: Result of the method call.
     fileprivate func setMsalError(
         error: NSError, result: @escaping FlutterResult
     ) {
