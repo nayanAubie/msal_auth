@@ -1,12 +1,11 @@
 package com.example.msal_auth
 
-import android.os.Handler
-import android.os.Looper
 import com.google.gson.Gson
 import com.microsoft.identity.client.AcquireTokenParameters
 import com.microsoft.identity.client.AcquireTokenSilentParameters
 import com.microsoft.identity.client.MultipleAccountPublicClientApplication
 import com.microsoft.identity.client.Prompt
+import com.microsoft.identity.client.PublicClientApplication
 import com.microsoft.identity.client.SingleAccountPublicClientApplication
 import com.microsoft.identity.client.configuration.AccountMode
 import io.flutter.plugin.common.BinaryMessenger
@@ -15,8 +14,6 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 
 class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHandler {
-    private val mTAG = MsalAuthHandler::class.simpleName
-
     private lateinit var channel: MethodChannel
 
     fun initialize(messenger: BinaryMessenger) {
@@ -24,8 +21,11 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
         channel.setMethodCallHandler(this)
     }
 
+    fun dispose() {
+        channel.setMethodCallHandler(null)
+    }
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        println("onMethodCall called========${call.method}")
         when (call.method) {
             "createSingleAccountPca", "createMultipleAccountPca" -> {
                 val config = call.argument<HashMap<String, Any>>("config")!!
@@ -65,14 +65,14 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
             "signOut" -> signOut(result)
 
             "getAccount" -> {
-                val identifier = call.argument<String>("identifier")!!
+                val identifier = call.arguments as String
                 getAccount(identifier, result)
             }
 
             "getAccounts" -> getAccounts(result)
 
             "removeAccount" -> {
-                val identifier = call.argument<String>("identifier")!!
+                val identifier = call.arguments as String
                 Thread { removeAccount(identifier, result) }.start()
             }
 
@@ -81,7 +81,7 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
     }
 
     private fun createSingleAccountPca(configFile: File, result: MethodChannel.Result) {
-        if (msal.isClientInitialized() && msal.iPublicClientApplication.configuration.accountMode == AccountMode.SINGLE) {
+        if (msal.isPcaInitialized() && msal.getAccountMode() == AccountMode.SINGLE) {
             result.success(true)
             return
         }
@@ -94,7 +94,7 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
     }
 
     private fun createMultipleAccountPca(configFile: File, result: MethodChannel.Result) {
-        if (msal.isClientInitialized() && msal.iPublicClientApplication.configuration.accountMode == AccountMode.MULTIPLE) {
+        if (msal.isPcaInitialized() && msal.getAccountMode() == AccountMode.MULTIPLE) {
             result.success(true)
             return
         }
@@ -112,14 +112,9 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
         loginHint: String?,
         result: MethodChannel.Result
     ) {
-        if (!msal.isClientInitialized()) {
-            Handler(Looper.getMainLooper()).post {
-                result.error(
-                    "AUTH_ERROR",
-                    "Client must be initialized before attempting to acquire a token.",
-                    null
-                )
-            }
+        if (!msal.isPcaInitialized()) {
+            setPcaInitError("acquireToken", result)
+            return
         }
 
         if (msal.iSingleAccountPca != null) {
@@ -160,14 +155,9 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
         identifier: String? = null,
         result: MethodChannel.Result
     ) {
-        if (!msal.isClientInitialized()) {
-            Handler(Looper.getMainLooper()).post {
-                result.error(
-                    "AUTH_ERROR",
-                    "Client must be initialized before attempting to acquire a silent token.",
-                    null
-                )
-            }
+        if (!msal.isPcaInitialized()) {
+            setPcaInitError("acquireTokenSilent", result)
+            return
         }
 
         if (msal.iSingleAccountPca != null) {
@@ -182,7 +172,7 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
                     val acquireTokenParameters = builder.build()
                     msal.iPublicClientApplication.acquireTokenSilentAsync(acquireTokenParameters)
                 } else {
-                    result.error("AUTH_ERROR", "No current account is available", null)
+                    msal.setNoCurrentAccountException(result)
                 }
             }
         } else if (msal.iMultipleAccountPca != null) {
@@ -199,34 +189,56 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
     }
 
     private fun getCurrentAccount(result: MethodChannel.Result) {
+        if (!msal.isPcaInitialized()) {
+            setPcaInitError("currentAccount", result)
+            return
+        }
+
         msal.iSingleAccountPca?.getCurrentAccountAsync(msal.currentAccountCallback(result))
     }
 
     private fun signOut(result: MethodChannel.Result) {
+        if (!msal.isPcaInitialized()) {
+            setPcaInitError("signOut", result)
+            return
+        }
+
         msal.iSingleAccountPca?.signOut(msal.signOutCallback(result))
     }
 
     private fun getAccount(identifier: String, result: MethodChannel.Result) {
+        if (!msal.isPcaInitialized()) {
+            setPcaInitError("getAccount", result)
+            return
+        }
+
         msal.iMultipleAccountPca?.getAccount(identifier, msal.accountCallback(result))
     }
 
     private fun getAccounts(result: MethodChannel.Result) {
+        if (!msal.isPcaInitialized()) {
+            setPcaInitError("getAccounts", result)
+            return
+        }
+
         msal.iMultipleAccountPca?.getAccounts(msal.loadAccountsCallback(result))
     }
 
     private fun removeAccount(identifier: String, result: MethodChannel.Result) {
-        if (!msal.isClientInitialized()) {
-            Handler(Looper.getMainLooper()).post {
-                result.error(
-                    "AUTH_ERROR",
-                    "Client must be initialized before attempting to remove",
-                    null
-                )
-            }
+        if (!msal.isPcaInitialized()) {
+            setPcaInitError("removeAccount", result)
             return
         }
 
         val account = msal.iMultipleAccountPca?.getAccount(identifier)
         msal.iMultipleAccountPca?.removeAccount(account, msal.removeAccountCallback(result))
+    }
+
+    private fun setPcaInitError(methodName: String, result: MethodChannel.Result) {
+        result.error(
+            "PCA_INIT",
+            "PublicClientApplication should be initialized to call $methodName.",
+            null
+        )
     }
 }

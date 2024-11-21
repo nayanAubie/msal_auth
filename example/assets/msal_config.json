@@ -23,7 +23,7 @@
     "logcat_enabled": false
   },
   "shared_device_mode_supported": false,
-  "account_mode": "MULTIPLE",
+  "account_mode": "SINGLE",
   "browser_safelist": [
     {
       "browser_package_name": "com.android.chrome",

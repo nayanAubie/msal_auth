@@ -1,4 +1,0 @@
-enum AccountMode {
-  single,
-  multiple;
-}

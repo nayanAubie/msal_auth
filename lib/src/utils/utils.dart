@@ -8,6 +8,8 @@ import '../models/models.dart';
 final class Utils {
   Utils._();
 
+  /// Creates the arguments for creating public client application.
+  /// Argument map will be passed to the native side.
   static Future<Map<String, dynamic>> createPcaArguments({
     required String clientId,
     AndroidConfig? androidConfig,

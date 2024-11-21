@@ -1,11 +1,8 @@
+import 'account.dart';
+
 final class AuthenticationResult {
   /// The access token requested.
   final String accessToken;
-
-  /// Gets the fully-formed Authorization header value.
-  /// Includes the Authentication scheme.
-  /// Example: Bearer eyJ1aWQiOiJj.......
-  final String authorizationHeader;
 
   /// Gets the authentication scheme (Bearer, PoP, etc)....
   final String authenticationScheme;
@@ -17,6 +14,14 @@ final class AuthenticationResult {
   /// this value reflects the expiry of the 'inner' token returned by AAD and
   /// does not indicate the expiry of the signed pop JWT ('outer' token).
   final DateTime expiresOn;
+
+  /// Gets the JWT format id_token. This value conforms to "RFC-7519" and
+  /// is further specified according to "OpenID Connect Core".
+  /// Note: MSAL does not validate the JWT token.
+  final String idToken;
+
+  /// Authority used in creating the app.
+  final String authority;
 
   /// A unique tenant identifier that was used in token acquisition.
   /// Could be null if tenant information is not returned by the service.
@@ -30,29 +35,46 @@ final class AuthenticationResult {
   final String correlationId;
 
   /// Microsoft account details.
-  final dynamic account;
+  final Account account;
 
   const AuthenticationResult({
     required this.accessToken,
-    required this.authorizationHeader,
     required this.authenticationScheme,
     required this.expiresOn,
+    required this.idToken,
+    required this.authority,
     required this.tenantId,
     required this.scopes,
     required this.correlationId,
     required this.account,
   });
 
+  String get authorizationHeader => '$authenticationScheme $accessToken';
+
   factory AuthenticationResult.fromJson(Map<String, dynamic> json) {
     return AuthenticationResult(
       accessToken: json['accessToken'],
-      authorizationHeader: json['authorizationHeader'],
       authenticationScheme: json['authenticationScheme'],
       expiresOn: DateTime.fromMillisecondsSinceEpoch(json['expiresOn']),
+      idToken: json['idToken'],
+      authority: json['authority'],
       tenantId: json['tenantId'],
-      scopes: json['scopes'],
+      scopes: json['scopes'].cast<String>(),
       correlationId: json['correlationId'],
-      account: json['account'],
+      account: Account.fromJson(json['account'].cast<String, dynamic>()),
     );
   }
+
+  Map<String, dynamic> toJson() =>
+      {
+        'accessToken': accessToken,
+        'authenticationScheme': authenticationScheme,
+        'expiresOn': expiresOn.millisecondsSinceEpoch,
+        'idToken': idToken,
+        'authority': authority,
+        'tenantId': tenantId,
+        'scopes': scopes,
+        'correlationId': correlationId,
+        'account': account.toJson(),
+      };
 }
