@@ -65,8 +65,7 @@ final class AuthenticationResult {
     );
   }
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'accessToken': accessToken,
         'authenticationScheme': authenticationScheme,
         'expiresOn': expiresOn.millisecondsSinceEpoch,
