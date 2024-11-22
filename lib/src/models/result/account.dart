@@ -25,8 +25,7 @@ final class Account {
     );
   }
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'id': id,
         'username': username,
         'name': name,

@@ -92,6 +92,22 @@ Follow the steps below to complete the Android configuration.
 
 ---
 
+### Setup Account Mode
+
+To support single account mode in Android, declare the following in a configuration file:
+
+```JSON
+"account_mode": "SINGLE"
+```
+
+For multiple mode:
+
+```JSON
+"account_mode": "MULTIPLE"
+```
+
+---
+
 ### Setup Authority
 
 Follow the [Android MSAL Authority] documentation to configure it in various ways, depending on your application's requirements.
