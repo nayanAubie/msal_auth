@@ -5,13 +5,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch development",
-      "request": "launch",
+      "name": "main.dart",
       "type": "dart",
+      "request": "launch",
       "program": "lib/main.dart",
       "args": [
-        "--target",
-        "lib/main.dart",
         "--dart-define-from-file",
         ".env/development.env"
       ]
