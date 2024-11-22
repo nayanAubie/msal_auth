@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'msal_auth'
-  s.version          = '1.0.0'
+  s.version          = '2.0.0'
   s.summary          = 'A new Flutter plugin for Azure AD authentication.'
   s.description      = <<-DESC
 A new Flutter plugin for Azure AD authentication.
