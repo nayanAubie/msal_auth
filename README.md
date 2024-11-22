@@ -4,34 +4,44 @@ Microsoft Authentication 🔐 Library for Flutter.
 
 `msal_auth` plugin provides Microsoft authentication in Android and iOS devices using native MSAL library. This is very straightforward and easy to use.
 
+## Platform Support
+
+| Android | iOS     |
+|---------|---------|
+| SDK 21+ | iOS 14+ |
+
 ## Features 🚀
 
-- Option to set one of the following Middleware:
+- Option to set one of the following broker (Authentication middleware):
   - MS Authenticator App
   - Browser
   - In-App WebView
-- Supports authentication against Entra ID (formerly Azure Active Directory)/Microsoft Account tenants as well as Azure Active Directory (AD) B2C tenants
-- Get auth token silently & interactive
-- Login hint & prompt type option
-- Microsoft User information with auth token
-- Logout
+- **Single** & **Multiple** account mode support
+- Supports different identity providers (authority):
+  - **AAD** (Microsoft Entra ID)
+  - **B2C** (Business to customer)
+- Acquire token **interactively** & **silently**
+- Option to set **login hint** & **prompt type** in acquiring token
+- Complete authentication result with account information
 ---
 
-To implement `MSAL` in `Flutter`, You need to setup an app in `Azure Portal` and required some of the platform specific configurations.
+To implement `MSAL` in Flutter, you first need to set up an app in the `Azure Portal` and configure certain platform-specific settings.
 
 ➡ Follow the step-by-step guide below ⬇️
 
 ## Create an App in Azure Portal
 
-- First of all, You need to Sign up and create an app on [Azure Portal].
-- To create the app, Search for `App registrations`, click on it and go to `New registration`.
-- Fill the `Name` and select `Supported account types` and register it.
-- Your application is created now and you should see the `Application (client) ID` and `Directory (tenant) ID`. Those values are required in Dart code.
+- First, sign up and create an app on the [Azure Portal].
+- To create the app, search for `App registrations`, click on it, and navigate to `New registration`.
+- Fill in the `Name` field, select the `Supported account types`, and register the app.
+- Once the application is created, you will see the `Application (client) ID` and `Directory (tenant) ID`. These values are required in your Dart code.
 
   ![Azure Dashboard](/Screenshots/Azure-Dashboard.png)
 
-- Now You need to add `Android` and `iOS` platform specific configuration in Azure portal. to do that, go to `Manage > Authentication > Add platform`.
-  
+- Next, you need to add platform-specific configurations for **Android** and **iOS** in the Azure Portal. To do this, navigate to `Manage > Authentication > Add platform`.
+
+---
+
 ### Android Setup - Azure portal
 
 - For Android, You need to provide `package name` and release `signature hash`.
@@ -43,6 +53,8 @@ To implement `MSAL` in `Flutter`, You need to setup an app in `Azure Portal` and
 
   - Make sure you have release `keystore` file placed inside `/app` folder.
   - Only one signature hash is required because it maps with `AndroidManifest.xml`.
+
+---
   
 ### iOS Setup - Azure portal
 
@@ -58,69 +70,87 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
 
 ## Android Configuration
 
-- This plugin supports fully customization as you can give configuration `JSON` that will be used in authentication.
-- Follow the below steps to complete Android configuration.
+This plugin offers full customization, allowing you to provide a configuration `JSON` file to be used during application creation & authentication.
 
-### Creating MSAL Config JSON
+Follow the steps below to complete the Android configuration.
 
-- Create one `msal_config.json` in `/assets` folder and copy the JSON from [Microsoft default configuration file].
-- Now add the `redirect_uri` in the above created JSON as below:
+### Creating MSAL Configuration JSON
 
-  ```JSON
-  "redirect_uri": "msauth://<APP_PACKAGE_NAME>/<BASE64_ENCODED_PACKAGE_SIGNATURE>",
+- Create an `msal_config.json` file in the `/assets` folder of your project and copy the **JSON** content from the [Microsoft default configuration file].
+- Obtain the `redirect_uri` from the **Azure Portal**. This URI is required in the Android configuration when creating the public client application using Dart code.
+- The redirect URI typically follows this format for Android:
+
+  ```
+  msauth://<APP_PACKAGE_NAME>/<BASE64_ENCODED_PACKAGE_SIGNATURE>
   ```
 
-- You can directly copy the `Redirect URI` from Azure portal.
+- Android redirect URI from Azure Portal:
 
   ![Android Redirect URI](/Screenshots/Azure-Android-Redirect-URI.png)
 
-### Setup authentication middleware (Optional)
+> There is no need to include `client_id` and `redirect_uri` in this JSON, as they will be added programmatically by the Dart code when the public client application is created.
 
-- Set broker authentication (authenticate user by [Microsoft Authenticator App])
+---
+
+### Setup Authority
+
+Follow the [Android MSAL Authority] documentation to configure it in various ways, depending on your application's requirements.
+
+---
+
+### Setup Broker (Authentication Middleware) (Optional)
+
+- **Set broker authentication** (authenticate user by [Microsoft Authenticator App])
 
   ```JSON
   "broker_redirect_uri_registered": true
   ```
 
-  - If Authenticator app is not installed on a device, `authorization_user_agent` will be used as a auth middleware.
+  - If the Authenticator app is not installed on the Android device, the `authorization_user_agent` configuration will be used for authentication.
 
-- Authenticate using Browser
+- **Authenticate using Browser**
 
   ```JSON
   "broker_redirect_uri_registered": false,
   "authorization_user_agent": "BROWSER"
   ```
 
-- Authenticate using WebView
+- **Authenticate using WebView**
 
   ```JSON
   "broker_redirect_uri_registered": false,
   "authorization_user_agent": "WEBVIEW"
   ```
 
-- To learn more about configuring JSON, follow [Android MSAL configuration].
+---
 
-### Add Activity in AndroidManifest.xml
+### Add BrowserTabActivity in AndroidManifest.xml
 
-- Add another activity inside `<application>` tag.
-- This is only needed if you want to use `Browser` as a auth middleware.
+- If you use `Browser` for authentication, you must specify `BrowserTabActivity` within the `<application>` tag in your **AndroidManifest.xml** file.
 
   ```XML
-  <activity android:name="com.microsoft.identity.client.BrowserTabActivity">
-      <intent-filter>
-          <action android:name="android.intent.action.VIEW" />
+  <application>
+  ...
 
-          <category android:name="android.intent.category.DEFAULT" />
-          <category android:name="android.intent.category.BROWSABLE" />
+    <activity android:name="com.microsoft.identity.client.BrowserTabActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
 
-          <data
-              android:host="com.example.msal_auth_example"
-              android:path="/<BASE64_ENCODED_PACKAGE_SIGNATURE>"
-              android:scheme="msauth" />
-      </intent-filter>
-  </activity>
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+
+            <data
+                android:host="com.example.msal_auth_example"
+                android:path="/<BASE64_ENCODED_PACKAGE_SIGNATURE>"
+                android:scheme="msauth" />
+        </intent-filter>
+    </activity>
+    
+  </application>
   ```
-- Replace `host` by your app's package name and `path` by the `base64` signature hash that is generated above.
+- Replace `host` with your app's package name and `path` with the `base64 signature hash` that was generated earlier.
+
+> To learn more about configuring JSON, follow [Android MSAL configuration].
 
 ## iOS Configuration
 
@@ -128,7 +158,9 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
 
   ![iOS Keychain Sharing](/Screenshots/iOS-Keychain-Sharing.png)
 
-> Without this, your app will not able to open [Microsoft Authenticator] app if you use it as a middleware. also, the `logout` method will throw an exception due to not find the account from cache.
+> Without this configuration, your app will not be able to open the [Microsoft Authenticator] app if specified in the broker. Additionally, the `logout` method will throw an exception because it will not be able to find the account in the cache.
+
+---
 
 ### `Info.plist` Modification
 
@@ -156,9 +188,12 @@ Please follow the platform configuration ⬇️ before jump to the `Dart` code.
   </array>
   ```
 
+---
+
 ### Handle `callback` from MSAL
 
-- Your app needs to handle login success callback if app uses [Microsoft Authenticator] app OR `Safari Browser` as a authentication middleware. `WebView` does not require it.
+- Your app needs to handle login success callback if app uses [Microsoft Authenticator] app OR `Safari Browser` for authentication. `WebView` does not require it.
+- Your app needs to handle the **login success callback** if it uses the [Microsoft Authenticator] app or `Safari Browser` for authentication. `WebView` does not require this callback.
 
 #### AppDelegate.swift
 
@@ -170,7 +205,7 @@ override func application(_ app: UIApplication, open url: URL, options: [UIAppli
 }
 ```
 
-- See [`AppDelegate.swift`] for more clarity.
+- Refer to the [`AppDelegate.swift`] file in the example app for more clarity.
 
 - If you adopted `UISceneDelegate` on iOS 13+, MSAL callback needs to be placed into the appropriate delegate method of `UISceneDelegate` instead of `AppDelegate`.
 
@@ -192,68 +227,120 @@ func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
 }
 ```
 
-- See more info on [iOS MSAL configuration].
+> See more info on [iOS MSAL configuration].
 
 ## Code Implementation 👨‍💻
 
-- This section contains writing `Dart` code to setup a `MSAL` application in `Flutter` and get auth token.
+This section covers how to write the `Dart` code to set up an `MSAL` application in `Flutter` and authenticate the user.
 
-### Setup MSAL Application
+### Create Public Client Application
+
+Create the public client app based on your account mode. usually, it is a single account mode.
 
 ```Dart
-final msalAuth = await MsalAuth.createPublicClientApplication(
+final msalAuth = await SingleAccountPca.create(
   clientId: '<MICROSOFT_CLIENT_ID>',
+  androidConfig: AndroidConfig(
+    configFilePath: 'assets/msal_config.json',
+    redirectUri: '<Android Redirect URI>',
+  ),
+  iosConfig: IosConfig(
+    authority: '<Optional, but must be provided for b2c>',
+    // Change broker if you need.
+    broker: Broker.msAuthenticator,
+    // Change authority type to 'b2c' for business to customer flow.
+    authorityType: AuthorityType.aad,
+  ),
+);
+```
+  
+- On `iOS`, if the broker is set to `AuthMiddleware.msAuthenticator` and the `Authenticator` app is not installed on the device, it will fall back to using `Safari Browser` for authentication.
+
+- By default, login will be attempted to AAD (Microsoft Entra ID). if you want to use B2C, set the `authorityType` to `AuthorityType.b2c`.
+
+- To modify value of `authority` in `iOS`, follow [Configure iOS authority].
+
+---
+
+### Acquire Token (Login to Microsoft Account)
+
+This method opens the **Microsoft login page** in the specified broker and provides the **authentication result** upon a successful login. The result includes the `accessToken`.
+
+```Dart
+final authResult = await publicClientApplication.acquireToken(
   scopes: <String>[
     'https://graph.microsoft.com/user.read',
     // Add other scopes here if required.
   ],
-  androidConfig: AndroidConfig(
-    configFilePath: 'assets/msal_config.json',
-    tenantId: '<MICROSOFT_TENANT_ID (Optional)>',
-  ),
-  iosConfig: IosConfig(
-    authority: 'https://login.microsoftonline.com/<MICROSOFT_TENANT_ID>/oauth2/v2.0/authorize',
-    // Change auth middleware if you need.
-    authMiddleware: AuthMiddleware.msAuthenticator,
-    tenantType: TenantType.entraIDAndMicrosoftAccount,
-  ),
-);
-```
-- To modify value of `authority` in `iOS`, follow [Configure iOS authority].
-
-- in `iOS`, if middleware is `AuthMiddleware.msAuthenticator` and `Authenticator` app is not installed on a device, It will use `Safari Browser` for authentication.
-
-- By default login will be attempted against an Entra ID (formerly Azure Active Directory) tenant which also supports Microsoft Account logins. To login to an Azure AD B2C tenant instead, set the `tenantType` value to `TenantType.azureADB2C`.
-
-### Get Auth Token (Login to Microsoft account)
-
-- This code is responsible to open Microsoft login page in given middleware and provide token on successful login.
-
-```Dart
-final user = await msalAuth.acquireToken(
   // UI option for authentication, default is [Prompt.whenRequired]
   prompt: Prompt.login,
   // Provide 'loginHint' if you have.
   loginHint: '<Email Id / Username / Unique Identifier>'
 );
-log('User data: ${user?.toJson()}');
+
+log('Auth result: ${authResult.toJson()}');
 ```
 
-### Get Auth Token by Silent Call 🔇 (When expired)
+---
 
-- Before using auth token, You must check for the token expiry time. You can do it by accessing `tokenExpiresOn` property from `MsalUser` object.
+### Acquire Token by Silent Call 🔇
+
+Typically, this method should be called when the `accessToken` expires. It uses the refresh token from the cached account, performs authentication in the background, and returns the authentication result, similar to the `acquireToken()` method.
+
+The app can store the `expiresOn` value of the `AuthenticationResult` in the preferences and check the following condition before using the `accessToken`:
 
 ```Dart
-if (msalUser.tokenExpiresOn <= DateTime.now().millisecondsSinceEpoch) {
-  final user = await msalAuth.acquireTokenSilent();
-  log('User data: ${user?.toJson()}');
+if (expiresOn.isBefore(DateTime.now())) {
+  final authResult = await publicClientApplication.acquireTokenSilent(
+    scopes: <String>[], // List of string same as "acquireToken()"
+    identifier: 'Account Identifier, required for multiple account mode',
+  );
+
+  log('Auth result: ${authResult.toJson()}');
+  // Store new value of "expiresOn" or entire "authResult" object.
 }
 ```
 
-- This will generate a new token without opening Microsoft login page. However, this method can open the login page if `MSALUiRequiredException` occurs.
-- You can learn more about [MSAL exceptions].
+> This method can throw an `MsalUiRequiredException` if the refresh token has expired or does not exist. In this case, the `acquireToken()` method should typically be called to prompt the user for interactive authentication and obtain a new access token.
+
+```Dart
+try {
+  acquireTokenSilent();
+} on MsalException catch (e) {
+  if (e is MsalUiRequiredException) {
+    await acquireToken();
+    // Handle auth result
+  }
+}
+```
+
+All other types of exceptions are optional to handle, depending on your use case.
 
 ---
+
+### Exception Handling 🚨
+
+All MSAL exceptions thrown by the Android and iOS platforms can be handled on the Dart side. You can manage them according to your use case, such as by logging the errors, displaying user-friendly messages, retrying the operation, or triggering specific app behaviors based on the type of exception.
+
+You can learn more about [MSAL exceptions - Android] and [MSAL exceptions - iOS].
+
+---
+
+### Setup Example App 📱
+
+The [`example`] app demonstrates all the features supported by this plugin with providing a practical implementation.
+
+It uses environment variables for the values such as client id, redirect URI, etc to make it easier to configure the app for different environments.
+
+To set it up, create a `.env/development.env` file in the root of your project and add your values like this:
+
+```ini
+AAD_CLIENT_ID=your-apps-client-id
+AAD_ANDROID_REDIRECT_URI=your-android-apps-redirect-uri
+AAD_IOS_AUTHORITY=https://login.microsoftonline.com/common
+```
+
+Use B2C authority URL in `AAD_IOS_AUTHORITY` if your app uses `b2c` flow.
 
 Follow [`example`] code for more details on implementation.
 
@@ -262,9 +349,11 @@ Follow [`example`] code for more details on implementation.
 [Microsoft default configuration file]: https://learn.microsoft.com/en-in/entra/identity-platform/msal-configuration#the-default-msal-configuration-file
 [Microsoft Authenticator App]: https://play.google.com/store/apps/details?id=com.azure.authenticator
 [Android MSAL configuration]: https://learn.microsoft.com/en-in/entra/identity-platform/msal-configuration
+[Android MSAL Authority]: https://learn.microsoft.com/en-us/entra/identity-platform/msal-configuration#authorities
 [iOS MSAL configuration]: https://learn.microsoft.com/en-us/entra/msal/objc/install-and-configure-msal#configuring-your-project-to-use-msal
 [Microsoft Authenticator]: https://apps.apple.com/us/app/microsoft-authenticator/id983156458
 [Configure iOS authority]: https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#change-the-default-authority
-[MSAL exceptions]: https://learn.microsoft.com/en-us/entra/msal/dotnet/advanced/exceptions/msal-error-handling
+[MSAL exceptions - Android]: https://learn.microsoft.com/en-us/entra/identity-platform/msal-android-handling-exceptions
+[MSAL exceptions - iOS]: https://learn.microsoft.com/en-us/entra/msal/objc/error-handling-ios
 [`example`]: example
 [`AppDelegate.swift`]: example/ios/Runner/AppDelegate.swift
