@@ -14,7 +14,7 @@ migrate_working_dir/
 *.iml
 *.ipr
 *.iws
-.idea/
+.idea/*
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -41,3 +41,20 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+**/android/.idea/
+
+# Exceptions to the above rules.
+!**/ios/**/default.mode1v3
+!**/ios/**/default.mode2v3
+!**/ios/**/default.pbxuser
+!**/ios/**/default.perspectivev3
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+!/dev/ci/**/Gemfile.lock
+!.vscode/extensions.json
+!.vscode/launch.json
+!.idea/codeStyles/
+!.idea/dictionaries/
+!.idea/runConfigurations/
+
+# Environment related
+.env/*

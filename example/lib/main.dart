@@ -1,7 +1,8 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:msal_auth/msal_auth.dart';
+
+import 'screens/login_screen.dart';
+import 'screens/multi_account_screen.dart';
+import 'screens/single_account_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,91 +16,30 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final _clientId = '<CLIENT_ID>';
-  final _tenantId = '<TENANT_ID>';
-  late final _authority =
-      'https://login.microsoftonline.com/$_tenantId/oauth2/v2.0/authorize';
-  final _scopes = <String>[
-    'https://graph.microsoft.com/user.read',
-    // Add other scopes here if required.
-  ];
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('MSAL example app'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton(
-                onPressed: getToken,
-                child: const Text('Get Token'),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: getTokenSilently,
-                child: const Text('Get Token silent'),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: logout,
-                child: const Text('Logout'),
-              ),
-            ],
-          ),
-        ),
-      ),
+      debugShowCheckedModeBanner: false,
+      initialRoute: LoginScreen.route,
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case LoginScreen.route:
+            final addAccount = settings.arguments as bool? ?? false;
+            return MaterialPageRoute(
+              builder: (context) => LoginScreen(addAccount: addAccount),
+            );
+          case SingleAccountScreen.route:
+            return MaterialPageRoute(
+              builder: (context) => const SingleAccountScreen(),
+            );
+          case MultiAccountScreen.route:
+            return MaterialPageRoute(
+              builder: (context) => const MultiAccountScreen(),
+            );
+          default:
+            return null;
+        }
+      },
     );
-  }
-
-  Future<MsalAuth> getMsalAuth() async {
-    return MsalAuth.createPublicClientApplication(
-      clientId: _clientId,
-      scopes: _scopes,
-      androidConfig: AndroidConfig(
-        configFilePath: 'assets/msal_config.json',
-        tenantId: _tenantId,
-      ),
-      iosConfig: IosConfig(authority: _authority),
-    );
-  }
-
-  Future<void> getToken() async {
-    try {
-      final msalAuth = await getMsalAuth();
-      final user = await msalAuth.acquireToken();
-      log('User data: ${user?.toJson()}');
-    } on MsalException catch (e) {
-      log('Msal exception with error: ${e.errorMessage}');
-    } catch (e) {
-      log(e.toString());
-    }
-  }
-
-  Future<void> getTokenSilently() async {
-    try {
-      final msalAuth = await getMsalAuth();
-      final user = await msalAuth.acquireTokenSilent();
-      log('User data: ${user?.toJson()}');
-    } on MsalException catch (e) {
-      log('Msal exception with error: ${e.errorMessage}');
-    } catch (e) {
-      log(e.toString());
-    }
-  }
-
-  Future<void> logout() async {
-    try {
-      final msalAuth = await getMsalAuth();
-      await msalAuth.logout();
-    } on MsalException catch (e) {
-      log('Msal exception with error: ${e.errorMessage}');
-    } catch (e) {
-      log(e.toString());
-    }
   }
 }

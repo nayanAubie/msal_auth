@@ -3,17 +3,13 @@ PODS:
   - MSAL (1.6.1):
     - MSAL/app-lib (= 1.6.1)
   - MSAL/app-lib (1.6.1)
-  - msal_auth (1.0.0):
+  - msal_auth (2.0.0):
     - Flutter
     - MSAL (~> 1.6.1)
-  - path_provider_foundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - msal_auth (from `.symlinks/plugins/msal_auth/ios`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
 
 SPEC REPOS:
   trunk:
@@ -24,14 +20,11 @@ EXTERNAL SOURCES:
     :path: Flutter
   msal_auth:
     :path: ".symlinks/plugins/msal_auth/ios"
-  path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/darwin"
 
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   MSAL: 1b729b879b095da48e24e63a88de4ef4383f6489
-  msal_auth: d042906509afd4d104a1bb34c71699fd53b4395c
-  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
+  msal_auth: 96acace494509b5b0bc49ee2cba8cf5f87aedad8
 
 PODFILE CHECKSUM: 1959d098c91d8a792531a723c4a9d7e9f6a01e38
 

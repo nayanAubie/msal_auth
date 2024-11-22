@@ -1,3 +1,35 @@
+## 3.0.0
+- Added support of `single` and `multiple` account mode.
+- Added new classes & methods based on account mode:
+  - SingleAccountPca (Single Account Mode):
+    - currentAccount
+    - signOut()
+  - MultipleAccountPca (Multiple Account Mode):
+    - getAccount()
+    - getAccounts()
+    - removeAccount()
+- Added `redirectUri` in `AndroidConfig` class as a required parameter.
+- Added `identifier` option in `acquireTokenSilent()` that is required for multiple account mode.
+- Defined all the possible exceptions in Dart side that can be thrown by native MSAL SDK.
+- `Example` app is completely re-written to showcase all the features.
+  
+- **BREAKING CHANGES:**
+  - `MsalAuth.createPublicClientApplication` is removed and added 3 classes:
+    - `PublicClientApplication` super class.
+    - `SingleAccountPca` for single account mode.
+      - `SingleAccountPca.create()` is used to create single account public client application.
+    - `MultipleAccountPca` for multiple account mode.
+      - `MultipleAccountPca.create()` is used to create multiple account public client application.
+  - `tenantId` from `AndroidConfig` is removed because it can be set through JSON configuration file.
+  - `AuthMiddleware` enum in `IosConfig` is renamed to `Broker`.
+  - `TenantType` enum in `IosConfig` is renamed to `AuthorityType` with it's values:
+    - `entraIDAndMicrosoftAccount` to `aad`.
+    - `azureADB2C` to `b2c`.
+  - `scopes` argument is moved to `acquireToken()` & `acquireTokenSilent()` methods. these methods are now part of `PublicClientApplication` class.
+  - `logout()` is removed so `signOut()` or `removeAccount()` is used based on your account mode.
+  - `MsalUser` class is replaced by `AuthenticationResult` with additional parameters.
+  - `MsalUserCanceledException` is renamed to `MsalUserCancelException`.
+
 ## 2.2.1
 - Added keychain group `com.microsoft.adalcache` in `example/ios` and updated instruction in README.
 
