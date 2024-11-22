@@ -42,7 +42,7 @@ final class SingleAccountPca extends PublicClientApplication {
 
   /// Signs out the current account and credentials (tokens).
   /// NOTE: If a device is marked as a shared device within broker,
-  /// signout will be device wide.
+  /// sign out will be device wide.
   Future<bool> signOut() async {
     try {
       final result = await kMethodChannel.invokeMethod('signOut');

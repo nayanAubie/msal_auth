@@ -71,8 +71,8 @@ final class MsalAuthService {
 
   /// Common method for both account mode.
   Future<(AuthenticationResult?, MsalException?)> acquireToken({
-    required String? loginHint,
-    required Prompt prompt,
+    String? loginHint,
+    Prompt prompt = Prompt.whenRequired,
   }) async {
     try {
       final result = await publicClientApplication?.acquireToken(
@@ -101,6 +101,11 @@ final class MsalAuthService {
       return (result, null);
     } on MsalException catch (e) {
       log('Acquire token silent failed => $e');
+
+      // If it is a UI required exception, try to acquire token interactively.
+      if (e is MsalUiRequiredException) {
+        return acquireToken();
+      }
       return (null, e);
     }
   }
