@@ -1,3 +1,6 @@
+## 3.0.1
+- Added `Account Mode` related instructions for Android in the README & fixed Dart analysis.
+
 ## 3.0.0
 - Added support of `single` and `multiple` account mode.
 - Added new classes & methods based on account mode:
