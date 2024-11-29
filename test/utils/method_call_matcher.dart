@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -14,7 +15,8 @@ class MethodCallMatcher extends Matcher {
   bool matches(Object? expectedMethod, Map<dynamic, dynamic> matchState) {
     return expectedMethod is MethodCall &&
         expectedMethod.method == method.method &&
-        mapsEqual(expectedMethod.arguments, method.arguments);
+        DeepCollectionEquality()
+            .equals(expectedMethod.arguments, method.arguments);
   }
 
   @override
@@ -41,7 +43,8 @@ class MethodCallMatcher extends Matcher {
       );
     }
 
-    if (!mapsEqual(expectedMethod.arguments, method.arguments)) {
+    if (!DeepCollectionEquality()
+        .equals(expectedMethod.arguments, method.arguments)) {
       return mismatchDescription.add(
         'expected arguments ${method.arguments}, '
         'but was ${expectedMethod.arguments}',
@@ -52,26 +55,4 @@ class MethodCallMatcher extends Matcher {
       'expected $method, but was $expectedMethod',
     );
   }
-}
-
-/// Helper function to compare maps for equality.
-bool mapsEqual(Map? map1, Map? map2) {
-  if (identical(map1, map2)) return true;
-  if (map1 == null || map2 == null) return map1 == map2;
-  if (map1.length != map2.length) return false;
-
-  for (final key in map1.keys) {
-    if (!map2.containsKey(key)) return false;
-
-    final value1 = map1[key];
-    final value2 = map2[key];
-
-    if (value1 is Map && value2 is Map) {
-      if (!mapsEqual(value1, value2)) return false;
-    } else if (value1 != value2) {
-      return false;
-    }
-  }
-
-  return true;
 }

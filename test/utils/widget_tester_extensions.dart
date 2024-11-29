@@ -3,12 +3,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:msal_auth/msal_auth.dart';
 
 extension WidgetTesterX on WidgetTester {
-  Future<void> setMockMethodCallHandler(
+  void setMockMethodCallHandler(
     Future<dynamic> Function(MethodCall) handler,
-  ) async {
+  ) {
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       kMethodChannel,
       handler,
+    );
+  }
+
+  void mockRootBundleLoadString(String path, String content) {
+    binding.defaultBinaryMessenger.setMockMessageHandler(
+      'flutter/assets',
+      (message) async => Future.value(
+        ByteData.sublistView(Uint8List.fromList(content.codeUnits)),
+      ),
     );
   }
 }
