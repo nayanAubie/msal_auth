@@ -1,6 +1,7 @@
-import '../../msal_auth.dart';
+import '../../../msal_auth.dart';
 
-abstract class PublicClientApplication {
+class WebPublicClientApplication extends PublicClientApplication {
+  @override
   Future<AuthenticationResult> acquireToken({
     /// Access levels your application is requesting from the
     /// Microsoft identity platform on behalf of a user.
@@ -13,8 +14,10 @@ abstract class PublicClientApplication {
     /// Value is used as an identity provider to pre-fill a user's
     /// email address or username in the login form.
     String? loginHint,
-  });
+  }) =>
+      throw UnimplementedError();
 
+  @override
   Future<AuthenticationResult> acquireTokenSilent({
     /// Access levels your application is requesting from the
     /// Microsoft identity platform on behalf of a user.
@@ -23,5 +26,6 @@ abstract class PublicClientApplication {
     /// Account identifier, basically id from account object.
     /// Required for multiple account mode.
     String? identifier,
-  });
+  }) =>
+      throw UnimplementedError();
 }
