@@ -110,7 +110,6 @@ void main() {
 
       testWidgets(
         'invokes createMultipleAccountPca with correct arguments for iOS',
-        skip: true,
         variant: TargetPlatformVariant.only(TargetPlatform.iOS),
         (tester) async {
           MethodCall? methodCall;
@@ -398,7 +397,6 @@ void main() {
 
       testWidgets(
         'calls getAccounts and returns list of Account on iOS',
-        skip: true,
         variant: TargetPlatformVariant.only(TargetPlatform.iOS),
         (tester) async {
           MethodCall? methodCall;
