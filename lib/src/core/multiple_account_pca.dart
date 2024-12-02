@@ -10,9 +10,15 @@ final class MultipleAccountPca implements PlatformMultipleAccountPca {
 
   final PlatformMultipleAccountPca _delegate;
 
+  /// Creates multiple account public client application.
   static Future<MultipleAccountPca> create({
+    /// Client id of the application.
     required String clientId,
+
+    /// Android configuration, required for android platform.
     AndroidConfig? androidConfig,
+
+    /// iOS configuration, required for iOS platform.
     IosConfig? iosConfig,
   }) async {
     final pca = kIsWeb
