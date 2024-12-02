@@ -1,6 +1,8 @@
 import '../../msal_auth.dart';
 
 abstract class PublicClientApplication {
+  /// Acquire token interactively, will pop-up webUI. this flow is called as
+  /// Interactive flow and so it skips the cache lookup.
   Future<AuthenticationResult> acquireToken({
     /// Access levels your application is requesting from the
     /// Microsoft identity platform on behalf of a user.
@@ -15,6 +17,11 @@ abstract class PublicClientApplication {
     String? loginHint,
   });
 
+  /// Perform acquire token silent call. If there is a valid access token in
+  /// the cache, the sdk will return the access token; If no valid access token
+  /// exists, the sdk will try to find a refresh token and use the refresh token
+  /// to get a new access token. If refresh token does not exist or it fails
+  /// the refresh, exception will be sent.
   Future<AuthenticationResult> acquireTokenSilent({
     /// Access levels your application is requesting from the
     /// Microsoft identity platform on behalf of a user.

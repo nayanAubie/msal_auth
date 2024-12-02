@@ -5,14 +5,22 @@ import 'mobile/mobile_single_account_pca.dart';
 import 'platform_single_account_pca.dart';
 import 'web/web_single_account_pca.dart';
 
+/// This class is used to create public client application for single account
+/// mode.
 final class SingleAccountPca implements PlatformSingleAccountPca {
   SingleAccountPca._create(this._delegate);
 
   final PlatformSingleAccountPca _delegate;
 
+  /// Creates single account public client application.
   static Future<SingleAccountPca> create({
+    /// Client id of the application.
     required String clientId,
+
+    /// Android configuration, required for android platform.
     AndroidConfig? androidConfig,
+
+    /// iOS configuration, required for iOS platform.
     IosConfig? iosConfig,
   }) async {
     final pca = kIsWeb
