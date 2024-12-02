@@ -5,6 +5,8 @@ import 'mobile/mobile_multiple_account_pca.dart';
 import 'platform_multiple_account_pca.dart';
 import 'web/web_multiple_platform_pca.dart';
 
+/// This class is used to create public client application for multiple account
+/// mode.
 final class MultipleAccountPca implements PlatformMultipleAccountPca {
   MultipleAccountPca._create(this._delegate);
 
