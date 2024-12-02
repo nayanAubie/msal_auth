@@ -11,10 +11,14 @@ class IosConfig {
   /// Type of authority to authenticate against.
   final AuthorityType authorityType;
 
+  /// Tenant subdomain required for Native Auth PCA.
+  final String? tenantSubdomain;
+
   IosConfig({
     this.authority,
     this.broker = Broker.msAuthenticator,
     this.authorityType = AuthorityType.aad,
+    this.tenantSubdomain,
   });
 }
 

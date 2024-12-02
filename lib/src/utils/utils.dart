@@ -14,6 +14,7 @@ final class Utils {
     required String clientId,
     AndroidConfig? androidConfig,
     IosConfig? iosConfig,
+    ChallengeType? challengeTypes,
   }) async {
     final arguments = <String, dynamic>{};
     if (Platform.isAndroid) {
@@ -35,8 +36,14 @@ final class Utils {
         'authority': iosConfig!.authority,
         'broker': iosConfig.broker.name,
         'authorityType': iosConfig.authorityType.name,
+        'tenantSubdomain': iosConfig.tenantSubdomain,
       });
     }
+
+    if (challengeTypes != null) {
+      arguments.addAll({'challengeTypes': challengeTypes.name});
+    }
+
     return arguments;
   }
 }

@@ -17,6 +17,7 @@ A new Flutter plugin for Azure AD authentication.
   s.dependency 'Flutter'
   s.platform = :ios, '14.0'
   s.dependency 'MSAL', '~> 1.6.1'
+  s.dependency 'MSAL/native-auth'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

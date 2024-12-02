@@ -10,6 +10,7 @@ final class MsalAuthService {
 
   static final MsalAuthService instance = MsalAuthService._();
 
+  final msalAuthWorker = MsalAuthWorker();
   final clientId = Environment.aadClientId;
   final scopes = [
     'https://graph.microsoft.com/user.read',
@@ -27,11 +28,16 @@ final class MsalAuthService {
   /// Use this instance if you want to use the multiple account mode.
   MultipleAccountPca? multipleAccountPca;
 
+  /// Use this instance if you want to use the native auth.
+  NativeAuthPca? nativeAuthPca;
+
   /// Creates the public client application based on the given account mode.
   Future<(bool, MsalException?)> createPublicClientApplication({
     required AccountMode accountMode,
     required Broker broker,
     required AuthorityType authorityType,
+    String? tenantSubdomain,
+    ChallengeType? challengeTypes,
   }) async {
     final androidConfig = AndroidConfig(
       configFilePath: 'assets/msal_config.json',
@@ -42,26 +48,41 @@ final class MsalAuthService {
       authority: Environment.aadIosAuthority,
       broker: broker,
       authorityType: authorityType,
+      tenantSubdomain: tenantSubdomain,
     );
 
     try {
-      if (accountMode == AccountMode.single) {
-        singleAccountPca = await SingleAccountPca.create(
-          clientId: clientId,
-          androidConfig: androidConfig,
-          iosConfig: iOsConfig,
-        );
-        publicClientApplication = singleAccountPca;
-        multipleAccountPca = null;
-      } else {
-        multipleAccountPca = await MultipleAccountPca.create(
-          clientId: clientId,
-          androidConfig: androidConfig,
-          iosConfig: iOsConfig,
-        );
-        publicClientApplication = multipleAccountPca;
-        singleAccountPca = null;
+      switch (accountMode) {
+        case AccountMode.single:
+          singleAccountPca = await SingleAccountPca.create(
+            clientId: clientId,
+            androidConfig: androidConfig,
+            iosConfig: iOsConfig,
+          );
+          publicClientApplication = singleAccountPca;
+          multipleAccountPca = null;
+          nativeAuthPca = null;
+        case AccountMode.multiple:
+          multipleAccountPca = await MultipleAccountPca.create(
+            clientId: clientId,
+            androidConfig: androidConfig,
+            iosConfig: iOsConfig,
+          );
+          publicClientApplication = multipleAccountPca;
+          singleAccountPca = null;
+          nativeAuthPca = null;
+        case AccountMode.nativeAuth:
+          nativeAuthPca = await NativeAuthPca.create(
+            clientId: clientId,
+            androidConfig: androidConfig,
+            iosConfig: iOsConfig,
+            challengeTypes: challengeTypes ?? ChallengeType.password,
+          );
+          publicClientApplication = nativeAuthPca;
+          singleAccountPca = null;
+          multipleAccountPca = null;
       }
+
       return (true, null);
     } on MsalException catch (e) {
       log('Create public client application failed => $e');
@@ -69,7 +90,43 @@ final class MsalAuthService {
     }
   }
 
-  /// Common method for both account mode.
+  /// Login using native auth.
+  Future<(bool, MsalException?)> nativeAuthLogin({
+    required String username,
+    String? password,
+  }) async {
+    try {
+      final result =
+          await nativeAuthPca?.signIn(username: username, password: password);
+      return (result ?? true, null);
+    } on MsalException catch (e) {
+      log('Native auth login failed => $e');
+      return (false, e);
+    }
+  }
+
+  /// Sign up using native auth.
+  Future<(bool, MsalException?)> nativeAuthSignUp({
+    required String username,
+    String? password,
+    Map<String, dynamic>? attributes,
+    bool signInAfterSignUp = false,
+  }) async {
+    try {
+      final result = await nativeAuthPca?.signUp(
+        username: username,
+        password: password,
+        attributes: attributes,
+        signInAfterSignUp: signInAfterSignUp,
+      );
+      return (result ?? true, null);
+    } on MsalException catch (e) {
+      log('Native auth sign up failed => $e');
+      return (false, e);
+    }
+  }
+
+  /// Common method for both account modes (i.e. single & multiple).
   Future<(AuthenticationResult?, MsalException?)> acquireToken({
     String? loginHint,
     Prompt prompt = Prompt.whenRequired,
@@ -88,7 +145,7 @@ final class MsalAuthService {
     }
   }
 
-  /// Common method for both account mode.
+  /// Common method for both account modes (i.e. single & multiple).
   Future<(AuthenticationResult?, MsalException?)> acquireTokenSilent({
     String? identifier,
   }) async {
@@ -110,22 +167,32 @@ final class MsalAuthService {
     }
   }
 
-  /// Used only with single account mode.
+  /// Used only with single account mode or native auth.
   Future<(Account?, MsalException?)> getCurrentAccount() async {
     try {
-      final result = await singleAccountPca?.currentAccount;
-      log('Current account => ${result?.toJson()}');
-      return (result, null);
+      Account? account;
+      if (singleAccountPca != null) {
+        account = await singleAccountPca?.currentAccount;
+      } else if (nativeAuthPca != null) {
+        account = await nativeAuthPca?.currentAccount;
+      }
+      log('Current account => ${account?.toJson()}');
+      return (account, null);
     } on MsalException catch (e) {
       log('Current account failed => $e');
       return (null, e);
     }
   }
 
-  /// Used only with single account mode.
+  /// Used only with single account mode or native auth.
   Future<(bool, MsalException?)> signOut() async {
     try {
-      final result = await singleAccountPca?.signOut();
+      bool? result;
+      if (singleAccountPca != null) {
+        result = await singleAccountPca?.signOut();
+      } else if (nativeAuthPca != null) {
+        result = await nativeAuthPca?.signOut();
+      }
       log('Sign out => $result');
       return (true, null);
     } on MsalException catch (e) {
@@ -177,8 +244,9 @@ final class MsalAuthService {
   }
 }
 
-/// Declare this enum if your app needs both account mode.
+/// Declare this enum if your app needs both account modes (i.e. single & multiple).
 enum AccountMode {
   single,
   multiple,
+  nativeAuth,
 }

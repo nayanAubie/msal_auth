@@ -7,6 +7,7 @@ import '../core/msal_auth_service.dart';
 import '../widgets/custom_drop_down.dart';
 import '../widgets/dialog/info_dialog.dart';
 import 'multi_account_screen.dart';
+import 'native_auth/native_auth_options_screen.dart';
 import 'single_account_screen.dart';
 
 /// Login screen with provided all the available features of the MSAL plugin.
@@ -95,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
             absorbing: widget.addAccount,
             child: CustomDropdown<AccountMode>(
               value: _selectedAccountMode,
-              items: AccountMode.values,
+              items: AccountMode.values.take(2).toList(),
               label: 'Account Mode',
               onChanged: (value) => setState(
                 () => _selectedAccountMode = value ?? AccountMode.single,
@@ -155,6 +156,28 @@ class _LoginScreenState extends State<LoginScreen> {
             child: const Text('Acquire Token (Login)'),
           ),
           SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () async {
+              final service = MsalAuthService.instance
+                ..singleAccountPca = null
+                ..multipleAccountPca = null;
+
+              final (created, exception) =
+                  await service.createPublicClientApplication(
+                accountMode: _selectedAccountMode,
+                broker: _selectedBroker,
+                authorityType: _selectedAuthorityType,
+                tenantSubdomain: '',
+                challengeTypes: ChallengeType.password,
+              );
+              if (created) {
+                Navigator.of(context).pushReplacementNamed(
+                  NativeAuthOptionsScreen.route,
+                );
+              }
+            },
+            child: const Text('Switch to Native Auth'),
+          ),
         ],
       ),
     );

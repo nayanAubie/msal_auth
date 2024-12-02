@@ -6,6 +6,7 @@ import '../utils/utils.dart';
 
 part 'multiple_account_pca.dart';
 part 'single_account_pca.dart';
+part 'native_auth_pca.dart';
 
 /// This is the super class for MSAL public client application. developer
 /// should use the child classes to create the app based on the need.

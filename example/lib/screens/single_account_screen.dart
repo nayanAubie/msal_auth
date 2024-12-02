@@ -7,11 +7,12 @@ import '../widgets/dialog/confirmation_dialog.dart';
 import '../widgets/dialog/info_dialog.dart';
 
 /// User lands on this screen once the user acquired a token with
-/// a single account mode.
+/// a single account mode or native auth.
 class SingleAccountScreen extends StatefulWidget {
-  static const route = '/single-account';
+  const SingleAccountScreen({super.key, this.isFromNativeAuth = false});
 
-  const SingleAccountScreen({super.key});
+  static const route = '/single-account';
+  final bool isFromNativeAuth;
 
   @override
   State<SingleAccountScreen> createState() => _SingleAccountScreenState();
@@ -80,7 +81,7 @@ class _SingleAccountScreenState extends State<SingleAccountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Single Account'),
+        title: Text('${widget.isFromNativeAuth ? '' : 'Single '}Account'),
         actions: [
           IconButton(
             onPressed: _signOut,
@@ -94,11 +95,13 @@ class _SingleAccountScreenState extends State<SingleAccountScreen> {
               padding: EdgeInsets.all(16),
               children: [
                 AccountCard(account: _account!),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _acquireTokenSilent,
-                  child: Text('Acquire Token Silently'),
-                ),
+                if (!widget.isFromNativeAuth) ...[
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _acquireTokenSilent,
+                    child: Text('Acquire Token Silently'),
+                  ),
+                ],
               ],
             ),
     );
