@@ -19,6 +19,9 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+  assets:
+    - assets/js/
+
   plugin:
     platforms:
       android:
