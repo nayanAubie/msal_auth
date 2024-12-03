@@ -16,18 +16,18 @@ import 'msalconfig.dart';
 external JSPromise jsInit(JSMsalConfig config);
 
 @JS('acquireToken')
-external JSPromise<JSAuthenticationResult> jsAcquireToken({
+external JSPromise<JSAuthenticationResult> jsAcquireToken(
   JSArray<JSString> scopes,
   JSString prompt,
   JSString? loginHint,
   JSBoolean useRedirect,
-});
+);
 
 @JS('acquireTokenSilent')
-external JSPromise<JSAuthenticationResult> jsAcquireTokenSilent({
+external JSPromise<JSAuthenticationResult> jsAcquireTokenSilent(
   JSArray<JSString> scopes,
   JSString? identifier,
-});
+);
 
 @JS('getAccount')
 external JSAccount jsGetAccount(JSString? identifier);
@@ -59,10 +59,10 @@ class WebOAuth {
     String? loginHint,
   }) async {
     final jsAuthenticationResult = await jsAcquireToken(
-      scopes: scopes.map((scope) => scope.toJS).toList().toJS,
-      prompt: prompt.name.toJS,
-      loginHint: loginHint?.toJS,
-      useRedirect: false.toJS,
+      scopes.map((scope) => scope.toJS).toList().toJS,
+      prompt.name.toJS,
+      loginHint?.toJS,
+      false.toJS,
     ).toDart;
     return jsAuthenticationResult.toDart;
   }
@@ -72,8 +72,8 @@ class WebOAuth {
     String? identifier,
   }) async {
     final jsAuthenticationResult = await jsAcquireTokenSilent(
-      scopes: scopes.map((scope) => scope.toJS).toList().toJS,
-      identifier: identifier?.toJS,
+      scopes.map((scope) => scope.toJS).toList().toJS,
+      identifier?.toJS,
     ).toDart;
     return jsAuthenticationResult.toDart;
   }

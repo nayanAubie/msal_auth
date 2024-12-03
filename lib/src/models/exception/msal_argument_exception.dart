@@ -9,7 +9,7 @@ class MsalArgumentException extends MsalException {
   /// Detailed error code.
   final String errorCode;
 
-  /// Argument name that has thown this exception.
+  /// Argument name that has thrown this exception.
   final String argumentName;
 
   /// Operation name provided by SDK.
