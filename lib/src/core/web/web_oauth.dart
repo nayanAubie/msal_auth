@@ -78,7 +78,7 @@ class WebOAuth {
     return jsAuthenticationResult.toDart;
   }
 
-  Future<Account> getAccount(String? identifier) async {
+  Future<Account> getAccount([String? identifier]) async {
     return jsGetAccount(identifier?.toJS).toDart;
   }
 
@@ -86,7 +86,7 @@ class WebOAuth {
     return jsGetAccounts().toDart.map((jsAccount) => jsAccount.toDart).toList();
   }
 
-  Future<void> logout(String? identifier) async {
+  Future<void> logout([String? identifier]) async {
     await jsLogout(identifier?.toJS, false.toJS).toDart;
   }
 }
