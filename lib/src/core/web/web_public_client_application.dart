@@ -1,6 +1,9 @@
 import '../../../msal_auth.dart';
+import 'web_oauth.dart';
 
-class WebPublicClientApplication extends PublicClientApplication {
+abstract class WebPublicClientApplication extends PublicClientApplication {
+  WebOAuth get oauth;
+
   @override
   Future<AuthenticationResult> acquireToken({
     /// Access levels your application is requesting from the
@@ -15,7 +18,11 @@ class WebPublicClientApplication extends PublicClientApplication {
     /// email address or username in the login form.
     String? loginHint,
   }) =>
-      throw UnimplementedError();
+      oauth.acquireToken(
+        scopes: scopes,
+        prompt: prompt,
+        loginHint: loginHint,
+      );
 
   @override
   Future<AuthenticationResult> acquireTokenSilent({
@@ -27,5 +34,8 @@ class WebPublicClientApplication extends PublicClientApplication {
     /// Required for multiple account mode.
     String? identifier,
   }) =>
-      throw UnimplementedError();
+      oauth.acquireTokenSilent(
+        scopes: scopes,
+        identifier: identifier,
+      );
 }

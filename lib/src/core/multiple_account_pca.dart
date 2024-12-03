@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../msal_auth.dart';
+import '../models/config/web_config.dart';
 import 'mobile/mobile_multiple_account_pca.dart';
 import 'platform_multiple_account_pca.dart';
 import 'web/web_multiple_platform_pca.dart';
@@ -22,15 +23,22 @@ final class MultipleAccountPca implements PlatformMultipleAccountPca {
 
     /// iOS configuration, required for iOS platform.
     IosConfig? iosConfig,
+
+    /// Web configuration, required for web platform.
+    WebConfig? webConfig,
   }) async {
-    final pca = kIsWeb
-        ? await WebMultipleAccountPca.create()
-        : await MobileMultipleAccountPca.create(
-            clientId: clientId,
-            androidConfig: androidConfig,
-            iosConfig: iosConfig,
-          );
-    return MultipleAccountPca._create(pca);
+    final PlatformMultipleAccountPca delegate;
+    if (kIsWeb) {
+      assert(webConfig != null, 'Web config is required for web platform');
+      delegate = await WebMultipleAccountPca.create(config: webConfig!);
+    } else {
+      delegate = await MobileMultipleAccountPca.create(
+        clientId: clientId,
+        androidConfig: androidConfig,
+        iosConfig: iosConfig,
+      );
+    }
+    return MultipleAccountPca._create(delegate);
   }
 
   @override

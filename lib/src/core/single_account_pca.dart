@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../msal_auth.dart';
+import '../models/config/web_config.dart';
 import 'mobile/mobile_single_account_pca.dart';
 import 'platform_single_account_pca.dart';
 import 'web/web_single_account_pca.dart';
@@ -22,15 +23,22 @@ final class SingleAccountPca implements PlatformSingleAccountPca {
 
     /// iOS configuration, required for iOS platform.
     IosConfig? iosConfig,
+
+    /// Web configuration, required for web platform.
+    WebConfig? webConfig,
   }) async {
-    final pca = kIsWeb
-        ? await WebSingleAccountPca.create()
-        : await MobileSingleAccountPca.create(
-            clientId: clientId,
-            androidConfig: androidConfig,
-            iosConfig: iosConfig,
-          );
-    return SingleAccountPca._create(pca);
+    final PlatformSingleAccountPca delegate;
+    if (kIsWeb) {
+      assert(webConfig != null, 'Web config is required for web platform');
+      delegate = await WebSingleAccountPca.create(config: webConfig!);
+    } else {
+      delegate = await MobileSingleAccountPca.create(
+        clientId: clientId,
+        androidConfig: androidConfig,
+        iosConfig: iosConfig,
+      );
+    }
+    return SingleAccountPca._create(delegate);
   }
 
   @override
