@@ -31,6 +31,668 @@ void main() {
   }
 
   group('MultipleAccountPca', () {
+    group('acquireToken', () {
+      testWidgets(
+        'throws AssertionError if scopes is empty on iOS',
+        variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+        (tester) async {
+          tester.setMockMethodCallHandler((call) async {
+            return null;
+          });
+          final pca = await MultipleAccountPca.create(
+            clientId: 'test',
+            iosConfig: IosConfig(),
+          );
+
+          expect(
+            pca.acquireToken(scopes: const []),
+            throwsA(
+              isA<AssertionError>().having(
+                (e) => e.message,
+                'message',
+                'Scopes can not be empty',
+              ),
+            ),
+          );
+        },
+      );
+
+      testWidgets(
+        'throws AssertionError if scopes is empty on Android',
+        (tester) async {
+          tester.setMockMethodCallHandler((call) async {
+            return null;
+          });
+          final pca = await setupAndCreateAndroidPca(tester);
+          expect(
+            pca.acquireToken(scopes: const []),
+            throwsA(
+              isA<AssertionError>().having(
+                (e) => e.message,
+                'message',
+                'Scopes can not be empty',
+              ),
+            ),
+          );
+        },
+      );
+
+      testWidgets(
+        'calls acquireToken with correct arguments and returns '
+        'AuthenticationResult on iOS',
+        variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+        (tester) async {
+          final expiresOn = DateTime(2024, 12, 2);
+          MethodCall? methodCall;
+          tester.setMockMethodCallHandler((call) async {
+            if (call.method == 'acquireToken') {
+              methodCall = call;
+            }
+            return {
+              'accessToken': 'testAccessToken',
+              'authenticationScheme': 'Bearer',
+              'expiresOn': expiresOn.millisecondsSinceEpoch,
+              'idToken': 'testIdToken',
+              'authority': 'testAuthority',
+              'tenantId': 'testTenantId',
+              'scopes': ['scope1', 'scope2'],
+              'correlationId': 'testCorrelationId',
+              'account': {
+                'id': 'testId',
+                'username': 'testUsername',
+                'name': 'testName',
+              },
+            };
+          });
+          final pca = await MultipleAccountPca.create(
+            clientId: 'test',
+            iosConfig: IosConfig(),
+          );
+          final result = await pca.acquireToken(
+            scopes: const ['scope1', 'scope2'],
+            loginHint: 'testLoginHint',
+            prompt: Prompt.consent,
+          );
+
+          expect(
+            methodCall,
+            equalsMethodCall(
+              MethodCall(
+                'acquireToken',
+                <String, dynamic>{
+                  'scopes': ['scope1', 'scope2'],
+                  'prompt': 'consent',
+                  'loginHint': 'testLoginHint',
+                  'broker': 'msAuthenticator',
+                },
+              ),
+            ),
+          );
+          expect(
+            result,
+            isA<AuthenticationResult>()
+                .having(
+                  (r) => r.accessToken,
+                  'accessToken',
+                  'testAccessToken',
+                )
+                .having(
+                  (r) => r.authenticationScheme,
+                  'authenticationScheme',
+                  'Bearer',
+                )
+                .having(
+                  (r) => r.expiresOn,
+                  'expiresOn',
+                  expiresOn,
+                )
+                .having(
+                  (r) => r.idToken,
+                  'idToken',
+                  'testIdToken',
+                )
+                .having(
+                  (r) => r.authority,
+                  'authority',
+                  'testAuthority',
+                )
+                .having(
+                  (r) => r.tenantId,
+                  'tenantId',
+                  'testTenantId',
+                )
+                .having(
+                  (r) => r.scopes,
+                  'scopes',
+                  const ['scope1', 'scope2'],
+                )
+                .having(
+                  (r) => r.correlationId,
+                  'correlationId',
+                  'testCorrelationId',
+                )
+                .having(
+                  (r) => r.account,
+                  'account',
+                  isA<Account>()
+                      .having(
+                        (a) => a.id,
+                        'id',
+                        'testId',
+                      )
+                      .having(
+                        (a) => a.username,
+                        'username',
+                        'testUsername',
+                      )
+                      .having(
+                        (a) => a.name,
+                        'name',
+                        'testName',
+                      ),
+                ),
+          );
+        },
+      );
+
+      testWidgets(
+        'calls acquireToken with correct arguments and returns '
+        'AuthenticationResult on Android',
+        (tester) async {
+          final expiresOn = DateTime(2024, 12, 2);
+          MethodCall? methodCall;
+          tester.setMockMethodCallHandler((call) async {
+            if (call.method == 'acquireToken') {
+              methodCall = call;
+            }
+            return {
+              'accessToken': 'testAccessToken',
+              'authenticationScheme': 'Bearer',
+              'expiresOn': expiresOn.millisecondsSinceEpoch,
+              'idToken': 'testIdToken',
+              'authority': 'testAuthority',
+              'tenantId': 'testTenantId',
+              'scopes': ['scope1', 'scope2'],
+              'correlationId': 'testCorrelationId',
+              'account': {
+                'id': 'testId',
+                'username': 'testUsername',
+                'name': 'testName',
+              },
+            };
+          });
+
+          final pca = await setupAndCreateAndroidPca(tester);
+          final result = await pca.acquireToken(
+            scopes: const ['scope1', 'scope2'],
+            loginHint: 'testLoginHint',
+            prompt: Prompt.consent,
+          );
+
+          expect(
+            methodCall,
+            equalsMethodCall(
+              MethodCall(
+                'acquireToken',
+                <String, dynamic>{
+                  'scopes': ['scope1', 'scope2'],
+                  'prompt': 'consent',
+                  'loginHint': 'testLoginHint',
+                  'broker': 'msAuthenticator',
+                },
+              ),
+            ),
+          );
+          expect(
+            result,
+            isA<AuthenticationResult>()
+                .having(
+                  (r) => r.accessToken,
+                  'accessToken',
+                  'testAccessToken',
+                )
+                .having(
+                  (r) => r.authenticationScheme,
+                  'authenticationScheme',
+                  'Bearer',
+                )
+                .having(
+                  (r) => r.expiresOn,
+                  'expiresOn',
+                  expiresOn,
+                )
+                .having(
+                  (r) => r.idToken,
+                  'idToken',
+                  'testIdToken',
+                )
+                .having(
+                  (r) => r.authority,
+                  'authority',
+                  'testAuthority',
+                )
+                .having(
+                  (r) => r.tenantId,
+                  'tenantId',
+                  'testTenantId',
+                )
+                .having(
+                  (r) => r.scopes,
+                  'scopes',
+                  const ['scope1', 'scope2'],
+                )
+                .having(
+                  (r) => r.correlationId,
+                  'correlationId',
+                  'testCorrelationId',
+                )
+                .having(
+                  (r) => r.account,
+                  'account',
+                  isA<Account>()
+                      .having(
+                        (a) => a.id,
+                        'id',
+                        'testId',
+                      )
+                      .having(
+                        (a) => a.username,
+                        'username',
+                        'testUsername',
+                      )
+                      .having(
+                        (a) => a.name,
+                        'name',
+                        'testName',
+                      ),
+                ),
+          );
+        },
+      );
+
+      testWidgets(
+        'converts PlatformException to MsalException exception '
+        'and throws it on iOS',
+        variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+        (tester) async {
+          tester.setMockMethodCallHandler((call) async {
+            if (call.method == 'acquireToken') {
+              throw PlatformException(code: 'testCode', message: 'testMessage');
+            }
+            return null;
+          });
+          final pca = await MultipleAccountPca.create(
+            clientId: 'test',
+            iosConfig: IosConfig(),
+          );
+
+          expect(
+            pca.acquireToken(scopes: const ['scope1', 'scope2']),
+            throwsA(
+              isA<MsalException>().having(
+                (e) => e.message,
+                'message',
+                'testMessage',
+              ),
+            ),
+          );
+        },
+      );
+
+      testWidgets(
+        'converts PlatformException to MsalException exception '
+        'and throws it on Android',
+        (tester) async {
+          tester.setMockMethodCallHandler((call) async {
+            if (call.method == 'acquireToken') {
+              throw PlatformException(code: 'testCode', message: 'testMessage');
+            }
+            return null;
+          });
+          final pca = await setupAndCreateAndroidPca(tester);
+
+          expect(
+            pca.acquireToken(scopes: const ['scope1', 'scope2']),
+            throwsA(
+              isA<MsalException>().having(
+                (e) => e.message,
+                'message',
+                'testMessage',
+              ),
+            ),
+          );
+        },
+      );
+    });
+
+    group('acquireTokenSilent', () {
+      testWidgets(
+        'throws AssertionError if scopes is empty on iOS',
+        variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+        (tester) async {
+          tester.setMockMethodCallHandler((call) async {
+            return null;
+          });
+          final pca = await MultipleAccountPca.create(
+            clientId: 'test',
+            iosConfig: IosConfig(),
+          );
+
+          expect(
+            pca.acquireTokenSilent(scopes: const []),
+            throwsA(
+              isA<AssertionError>().having(
+                (e) => e.message,
+                'message',
+                'Scopes can not be empty',
+              ),
+            ),
+          );
+        },
+      );
+
+      testWidgets(
+        'throws AssertionError if scopes is empty on Android',
+        (tester) async {
+          tester.setMockMethodCallHandler((call) async {
+            return null;
+          });
+          final pca = await setupAndCreateAndroidPca(tester);
+          expect(
+            pca.acquireTokenSilent(scopes: const []),
+            throwsA(
+              isA<AssertionError>().having(
+                (e) => e.message,
+                'message',
+                'Scopes can not be empty',
+              ),
+            ),
+          );
+        },
+      );
+
+      testWidgets(
+        'calls acquireTokenSilent with correct arguments and returns '
+        'AuthenticationResult on iOS',
+        variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+        (tester) async {
+          final expiresOn = DateTime(2024, 12, 2);
+          MethodCall? methodCall;
+          tester.setMockMethodCallHandler((call) async {
+            if (call.method == 'acquireTokenSilent') {
+              methodCall = call;
+            }
+            return {
+              'accessToken': 'testAccessToken',
+              'authenticationScheme': 'Bearer',
+              'expiresOn': expiresOn.millisecondsSinceEpoch,
+              'idToken': 'testIdToken',
+              'authority': 'testAuthority',
+              'tenantId': 'testTenantId',
+              'scopes': ['scope1', 'scope2'],
+              'correlationId': 'testCorrelationId',
+              'account': {
+                'id': 'testId',
+                'username': 'testUsername',
+                'name': 'testName',
+              },
+            };
+          });
+          final pca = await MultipleAccountPca.create(
+            clientId: 'test',
+            iosConfig: IosConfig(),
+          );
+          final result = await pca.acquireTokenSilent(
+            scopes: const ['scope1', 'scope2'],
+            identifier: 'testIdentifier',
+          );
+
+          expect(
+            methodCall,
+            equalsMethodCall(
+              MethodCall(
+                'acquireTokenSilent',
+                <String, dynamic>{
+                  'scopes': ['scope1', 'scope2'],
+                  'identifier': 'testIdentifier',
+                },
+              ),
+            ),
+          );
+          expect(
+            result,
+            isA<AuthenticationResult>()
+                .having(
+                  (r) => r.accessToken,
+                  'accessToken',
+                  'testAccessToken',
+                )
+                .having(
+                  (r) => r.authenticationScheme,
+                  'authenticationScheme',
+                  'Bearer',
+                )
+                .having(
+                  (r) => r.expiresOn,
+                  'expiresOn',
+                  expiresOn,
+                )
+                .having(
+                  (r) => r.idToken,
+                  'idToken',
+                  'testIdToken',
+                )
+                .having(
+                  (r) => r.authority,
+                  'authority',
+                  'testAuthority',
+                )
+                .having(
+                  (r) => r.tenantId,
+                  'tenantId',
+                  'testTenantId',
+                )
+                .having(
+                  (r) => r.scopes,
+                  'scopes',
+                  const ['scope1', 'scope2'],
+                )
+                .having(
+                  (r) => r.correlationId,
+                  'correlationId',
+                  'testCorrelationId',
+                )
+                .having(
+                  (r) => r.account,
+                  'account',
+                  isA<Account>()
+                      .having(
+                        (a) => a.id,
+                        'id',
+                        'testId',
+                      )
+                      .having(
+                        (a) => a.username,
+                        'username',
+                        'testUsername',
+                      )
+                      .having(
+                        (a) => a.name,
+                        'name',
+                        'testName',
+                      ),
+                ),
+          );
+        },
+      );
+
+      testWidgets(
+        'calls acquireTokenSilent with correct arguments and returns '
+        'AuthenticationResult on Android',
+        (tester) async {
+          final expiresOn = DateTime(2024, 12, 2);
+          MethodCall? methodCall;
+          tester.setMockMethodCallHandler((call) async {
+            if (call.method == 'acquireTokenSilent') {
+              methodCall = call;
+            }
+            return {
+              'accessToken': 'testAccessToken',
+              'authenticationScheme': 'Bearer',
+              'expiresOn': expiresOn.millisecondsSinceEpoch,
+              'idToken': 'testIdToken',
+              'authority': 'testAuthority',
+              'tenantId': 'testTenantId',
+              'scopes': ['scope1', 'scope2'],
+              'correlationId': 'testCorrelationId',
+              'account': {
+                'id': 'testId',
+                'username': 'testUsername',
+                'name': 'testName',
+              },
+            };
+          });
+
+          final pca = await setupAndCreateAndroidPca(tester);
+          final result = await pca.acquireTokenSilent(
+            scopes: const ['scope1', 'scope2'],
+            identifier: 'testIdentifier',
+          );
+
+          expect(
+            methodCall,
+            equalsMethodCall(
+              MethodCall(
+                'acquireTokenSilent',
+                <String, dynamic>{
+                  'scopes': ['scope1', 'scope2'],
+                  'identifier': 'testIdentifier',
+                },
+              ),
+            ),
+          );
+          expect(
+            result,
+            isA<AuthenticationResult>()
+                .having(
+                  (r) => r.accessToken,
+                  'accessToken',
+                  'testAccessToken',
+                )
+                .having(
+                  (r) => r.authenticationScheme,
+                  'authenticationScheme',
+                  'Bearer',
+                )
+                .having(
+                  (r) => r.expiresOn,
+                  'expiresOn',
+                  expiresOn,
+                )
+                .having(
+                  (r) => r.idToken,
+                  'idToken',
+                  'testIdToken',
+                )
+                .having(
+                  (r) => r.authority,
+                  'authority',
+                  'testAuthority',
+                )
+                .having(
+                  (r) => r.tenantId,
+                  'tenantId',
+                  'testTenantId',
+                )
+                .having(
+                  (r) => r.scopes,
+                  'scopes',
+                  const ['scope1', 'scope2'],
+                )
+                .having(
+                  (r) => r.correlationId,
+                  'correlationId',
+                  'testCorrelationId',
+                )
+                .having(
+                  (r) => r.account,
+                  'account',
+                  isA<Account>()
+                      .having(
+                        (a) => a.id,
+                        'id',
+                        'testId',
+                      )
+                      .having(
+                        (a) => a.username,
+                        'username',
+                        'testUsername',
+                      )
+                      .having(
+                        (a) => a.name,
+                        'name',
+                        'testName',
+                      ),
+                ),
+          );
+        },
+      );
+
+      testWidgets(
+        'converts PlatformException to MsalException exception '
+        'and throws it on iOS',
+        variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+        (tester) async {
+          tester.setMockMethodCallHandler((call) async {
+            if (call.method == 'acquireTokenSilent') {
+              throw PlatformException(code: 'testCode', message: 'testMessage');
+            }
+            return null;
+          });
+          final pca = await MultipleAccountPca.create(
+            clientId: 'test',
+            iosConfig: IosConfig(),
+          );
+
+          expect(
+            pca.acquireTokenSilent(scopes: const ['scope1', 'scope2']),
+            throwsA(
+              isA<MsalException>().having(
+                (e) => e.message,
+                'message',
+                'testMessage',
+              ),
+            ),
+          );
+        },
+      );
+
+      testWidgets(
+        'converts PlatformException to MsalException exception '
+        'and throws it on Android',
+        (tester) async {
+          tester.setMockMethodCallHandler((call) async {
+            if (call.method == 'acquireTokenSilent') {
+              throw PlatformException(code: 'testCode', message: 'testMessage');
+            }
+            return null;
+          });
+          final pca = await setupAndCreateAndroidPca(tester);
+
+          expect(
+            pca.acquireTokenSilent(scopes: const ['scope1', 'scope2']),
+            throwsA(
+              isA<MsalException>().having(
+                (e) => e.message,
+                'message',
+                'testMessage',
+              ),
+            ),
+          );
+        },
+      );
+    });
+
     group('create', () {
       testWidgets(
         'throws AssertionError if androidConfig is null on Android platform',
