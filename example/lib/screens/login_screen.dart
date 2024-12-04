@@ -136,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             if (_selectedAuthorityType == AuthorityType.b2c)
               Text(
-                'Set your b2c authority URL in the "AAD_IOS_AUTHORITY" variable of environment.',
+                'Set your b2c authority URL in the "AAD_APPLE_AUTHORITY" variable of environment.',
                 style: TextStyle(fontSize: 12),
               ),
             if (Platform.isIOS) ...[
