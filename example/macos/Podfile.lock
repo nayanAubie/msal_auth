@@ -1,0 +1,31 @@
+PODS:
+  - FlutterMacOS (1.0.0)
+  - MSAL (1.6.1):
+    - MSAL/app-lib (= 1.6.1)
+  - MSAL/app-lib (1.6.1)
+  - msal_auth (0.0.1):
+    - FlutterMacOS
+    - MSAL (~> 1.6.1)
+
+DEPENDENCIES:
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - msal_auth (from `Flutter/ephemeral/.symlinks/plugins/msal_auth/macos`)
+
+SPEC REPOS:
+  trunk:
+    - MSAL
+
+EXTERNAL SOURCES:
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  msal_auth:
+    :path: Flutter/ephemeral/.symlinks/plugins/msal_auth/macos
+
+SPEC CHECKSUMS:
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  MSAL: 1b729b879b095da48e24e63a88de4ef4383f6489
+  msal_auth: ff264e620a78acd502e012f8b68c21dda19c0871
+
+PODFILE CHECKSUM: 9ebaf0ce3d369aaa26a9ea0e159195ed94724cf3
+
+COCOAPODS: 1.16.2

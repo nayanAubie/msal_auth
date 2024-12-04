@@ -13,14 +13,14 @@ final class SingleAccountPca extends PublicClientApplication {
     /// Android configuration, required for android platform.
     AndroidConfig? androidConfig,
 
-    /// iOS configuration, required for iOS platform.
-    IosConfig? iosConfig,
+    /// Apple configuration, required for iOS & MacOS platform.
+    AppleConfig? appleConfig,
   }) async {
     try {
       final arguments = await Utils.createPcaArguments(
         clientId: clientId,
         androidConfig: androidConfig,
-        iosConfig: iosConfig,
+        appleConfig: appleConfig,
       );
       await kMethodChannel.invokeMethod('createSingleAccountPca', arguments);
       return SingleAccountPca._create();

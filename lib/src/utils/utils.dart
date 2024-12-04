@@ -13,7 +13,7 @@ final class Utils {
   static Future<Map<String, dynamic>> createPcaArguments({
     required String clientId,
     AndroidConfig? androidConfig,
-    IosConfig? iosConfig,
+    AppleConfig? appleConfig,
   }) async {
     final arguments = <String, dynamic>{};
     if (Platform.isAndroid) {
@@ -28,14 +28,16 @@ final class Utils {
         });
 
       arguments.addAll({'config': config});
-    } else if (Platform.isIOS) {
-      assert(iosConfig != null, 'iOS config can not be null');
+    } else if (Platform.isIOS || Platform.isMacOS) {
+      assert(appleConfig != null, 'Apple config can not be null');
       arguments.addAll({
         'clientId': clientId,
-        'authority': iosConfig!.authority,
-        'broker': iosConfig.broker.name,
-        'authorityType': iosConfig.authorityType.name,
+        'authority': appleConfig!.authority,
+        'authorityType': appleConfig.authorityType.name,
       });
+      if (Platform.isIOS) {
+        arguments.addAll({'broker': appleConfig.broker.name});
+      }
     }
     return arguments;
   }
