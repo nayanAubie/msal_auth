@@ -15,6 +15,9 @@ abstract class PublicClientApplication {
     /// Value is used as an identity provider to pre-fill a user's
     /// email address or username in the login form.
     String? loginHint,
+
+    /// Use redirect flow instead of popup on web.
+    bool webUseRedirect = false,
   });
 
   /// Perform acquire token silent call. If there is a valid access token in

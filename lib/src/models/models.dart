@@ -1,6 +1,7 @@
 export 'config/android_config.dart';
 export 'config/ios_config.dart';
 export 'config/prompt.dart';
+export 'config/web_config.dart';
 export 'exception/msal_exception.dart';
 export 'result/account.dart';
 export 'result/authentication_result.dart';

@@ -1,5 +1,4 @@
 import '../../msal_auth.dart';
-import '../models/config/web_config.dart';
 import 'mobile/pca_factory.dart'
     if (dart.library.js_interop) 'web/pca_factory.dart' as pca_factory;
 import 'platform_multiple_account_pca.dart';
@@ -48,11 +47,15 @@ final class MultipleAccountPca implements PlatformMultipleAccountPca {
     /// Value is used as an identity provider to pre-fill a user's
     /// email address or username in the login form.
     String? loginHint,
+
+    /// Use redirect flow instead of popup. Only used on web.
+    bool webUseRedirect = false,
   }) =>
       _delegate.acquireToken(
         scopes: scopes,
         prompt: prompt,
         loginHint: loginHint,
+        webUseRedirect: webUseRedirect,
       );
 
   @override

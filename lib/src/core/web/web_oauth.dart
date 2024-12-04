@@ -6,8 +6,7 @@ library;
 
 import 'dart:js_interop';
 
-import '../../../msal_auth.dart';
-import '../../models/config/web_config.dart';
+import '../../models/models.dart';
 import '../../models/web/js_account.dart';
 import '../../models/web/js_authentication_result.dart';
 import 'msalconfig.dart';
@@ -16,7 +15,7 @@ import 'msalconfig.dart';
 external JSPromise jsInit(JSMsalConfig config);
 
 @JS('acquireToken')
-external JSPromise<JSAuthenticationResult> jsAcquireToken(
+external JSPromise<JSAuthenticationResult?> jsAcquireToken(
   JSArray<JSString> scopes,
   JSString prompt,
   JSString? loginHint,
@@ -24,7 +23,7 @@ external JSPromise<JSAuthenticationResult> jsAcquireToken(
 );
 
 @JS('acquireTokenSilent')
-external JSPromise<JSAuthenticationResult> jsAcquireTokenSilent(
+external JSPromise<JSAuthenticationResult?> jsAcquireTokenSilent(
   JSArray<JSString> scopes,
   JSString? identifier,
 );
@@ -57,6 +56,7 @@ class WebOAuth {
     required List<String> scopes,
     Prompt prompt = Prompt.whenRequired,
     String? loginHint,
+    bool webUseRedirect = false,
   }) async {
     final jsAuthenticationResult = await jsAcquireToken(
       scopes.map((scope) => scope.toJS).toList().toJS,
@@ -64,6 +64,10 @@ class WebOAuth {
       loginHint?.toJS,
       false.toJS,
     ).toDart;
+
+    if (jsAuthenticationResult == null) {
+      throw MsalException(message: 'No authentication result');
+    }
     return jsAuthenticationResult.toDart;
   }
 
@@ -75,6 +79,10 @@ class WebOAuth {
       scopes.map((scope) => scope.toJS).toList().toJS,
       identifier?.toJS,
     ).toDart;
+
+    if (jsAuthenticationResult == null) {
+      throw MsalException(message: 'No authentication result');
+    }
     return jsAuthenticationResult.toDart;
   }
 

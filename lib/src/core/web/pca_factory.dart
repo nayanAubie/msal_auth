@@ -1,5 +1,4 @@
-import '../../../msal_auth.dart';
-import '../../models/config/web_config.dart';
+import '../../models/models.dart';
 import '../platform_multiple_account_pca.dart';
 import '../platform_single_account_pca.dart';
 import 'web_multiple_platform_pca.dart';
