@@ -1,9 +1,15 @@
-part of 'public_client_application.dart';
+import '../../msal_auth.dart';
+import '../models/config/web_config.dart';
+import 'mobile/pca_factory.dart'
+    if (dart.library.js_interop) 'web/pca_factory.dart' as pca_factory;
+import 'platform_multiple_account_pca.dart';
 
 /// This class is used to create public client application for multiple account
 /// mode.
-final class MultipleAccountPca extends PublicClientApplication {
-  MultipleAccountPca._create();
+final class MultipleAccountPca implements PlatformMultipleAccountPca {
+  MultipleAccountPca._create(this._delegate);
+
+  final PlatformMultipleAccountPca _delegate;
 
   /// Creates multiple account public client application.
   static Future<MultipleAccountPca> create({
@@ -15,53 +21,60 @@ final class MultipleAccountPca extends PublicClientApplication {
 
     /// iOS configuration, required for iOS platform.
     IosConfig? iosConfig,
+
+    /// Web configuration, required for web platform.
+    WebConfig? webConfig,
   }) async {
-    final arguments = await Utils.createPcaArguments(
+    final PlatformMultipleAccountPca delegate;
+    delegate = await pca_factory.createMultipleAccountPca(
       clientId: clientId,
       androidConfig: androidConfig,
       iosConfig: iosConfig,
+      webConfig: webConfig,
     );
-    try {
-      await kMethodChannel.invokeMethod('createMultipleAccountPca', arguments);
-      return MultipleAccountPca._create();
-    } on PlatformException catch (e) {
-      throw e.convertToMsalException();
-    }
+    return MultipleAccountPca._create(delegate);
   }
 
-  /// Gets the account from the cache by using given identifier.
-  /// if no account is available, it will throw an exception.
-  Future<Account> getAccount({required String identifier}) async {
-    try {
-      final result =
-          await kMethodChannel.invokeMethod('getAccount', identifier);
-      return Account.fromJson(result.cast<String, dynamic>());
-    } on PlatformException catch (e) {
-      throw e.convertToMsalException();
-    }
-  }
+  @override
+  Future<AuthenticationResult> acquireToken({
+    /// Access levels your application is requesting from the
+    /// Microsoft identity platform on behalf of a user.
+    required List<String> scopes,
 
-  /// Asynchronously returns a list of [Account] objects for which
-  /// this application has refresh tokens.
-  Future<List<Account>> getAccounts() async {
-    try {
-      final result = await kMethodChannel.invokeMethod('getAccounts') as List;
-      return result
-          .map((account) => Account.fromJson(account.cast<String, dynamic>()))
-          .toList();
-    } on PlatformException catch (e) {
-      throw e.convertToMsalException();
-    }
-  }
+    /// Initial UI option.
+    Prompt prompt = Prompt.whenRequired,
 
-  /// Removes the account and credentials (tokens) for the given identifier.
-  Future<bool> removeAccount({required String identifier}) async {
-    try {
-      final result =
-          await kMethodChannel.invokeMethod('removeAccount', identifier);
-      return result;
-    } on PlatformException catch (e) {
-      throw e.convertToMsalException();
-    }
-  }
+    /// It should be valid "email id" or "username" or "unique identifier".
+    /// Value is used as an identity provider to pre-fill a user's
+    /// email address or username in the login form.
+    String? loginHint,
+  }) =>
+      _delegate.acquireToken(
+        scopes: scopes,
+        prompt: prompt,
+        loginHint: loginHint,
+      );
+
+  @override
+  Future<AuthenticationResult> acquireTokenSilent({
+    /// Access levels your application is requesting from the
+    /// Microsoft identity platform on behalf of a user.
+    required List<String> scopes,
+
+    /// Account identifier, basically id from account object.
+    /// Required for multiple account mode.
+    String? identifier,
+  }) =>
+      _delegate.acquireTokenSilent(scopes: scopes, identifier: identifier);
+
+  @override
+  Future<Account> getAccount({required String identifier}) =>
+      _delegate.getAccount(identifier: identifier);
+
+  @override
+  Future<List<Account>> getAccounts() => _delegate.getAccounts();
+
+  @override
+  Future<bool> removeAccount({required String identifier}) =>
+      _delegate.removeAccount(identifier: identifier);
 }
