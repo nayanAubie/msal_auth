@@ -13,13 +13,13 @@ final class MultipleAccountPca extends PublicClientApplication {
     /// Android configuration, required for android platform.
     AndroidConfig? androidConfig,
 
-    /// iOS configuration, required for iOS platform.
-    IosConfig? iosConfig,
+    /// Apple configuration, required for iOS & MacOS platform.
+    AppleConfig? appleConfig,
   }) async {
     final arguments = await Utils.createPcaArguments(
       clientId: clientId,
       androidConfig: androidConfig,
-      iosConfig: iosConfig,
+      appleConfig: appleConfig,
     );
     try {
       await kMethodChannel.invokeMethod('createMultipleAccountPca', arguments);

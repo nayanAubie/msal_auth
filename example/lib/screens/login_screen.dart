@@ -46,8 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final service = MsalAuthService.instance;
     final (created, exception) = await service.createPublicClientApplication(
       accountMode: _selectedAccountMode,
-      broker: _selectedBroker,
       authorityType: _selectedAuthorityType,
+      broker: _selectedBroker,
     );
     if (created) {
       final (result, exception) = await service.acquireToken(
@@ -119,20 +119,11 @@ class _LoginScreenState extends State<LoginScreen> {
               hintText: 'Login hint (Optional)',
             ),
           ),
-          if (Platform.isIOS) ...[
+          if (Platform.isIOS || Platform.isMacOS) ...[
             SizedBox(height: 24),
             Text(
-              'iOS Specific',
+              'Apple Specific',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            CustomDropdown<Broker>(
-              value: _selectedBroker,
-              items: Broker.values,
-              label: 'Broker',
-              onChanged: (value) => setState(
-                () => _selectedBroker = value ?? Broker.msAuthenticator,
-              ),
             ),
             SizedBox(height: 16),
             CustomDropdown<AuthorityType>(
@@ -145,9 +136,20 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             if (_selectedAuthorityType == AuthorityType.b2c)
               Text(
-                'Set your b2c authority URL in the "AAD_IOS_AUTHORITY" variable of environment.',
+                'Set your b2c authority URL in the "AAD_APPLE_AUTHORITY" variable of environment.',
                 style: TextStyle(fontSize: 12),
               ),
+            if (Platform.isIOS) ...[
+              SizedBox(height: 16),
+              CustomDropdown<Broker>(
+                value: _selectedBroker,
+                items: Broker.values,
+                label: 'Broker',
+                onChanged: (value) => setState(
+                  () => _selectedBroker = value ?? Broker.msAuthenticator,
+                ),
+              ),
+            ],
           ],
           SizedBox(height: 16),
           ElevatedButton(

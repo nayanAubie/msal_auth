@@ -1,20 +1,15 @@
-import Flutter
+import Cocoa
+import FlutterMacOS
 import MSAL
-import UIKit
 
-/// This is the main entry point for the Flutter plugin.
-/// It manages the method calls from Flutter & sets results accordingly.
 public class MsalAuthPlugin: NSObject, FlutterPlugin {
-
-    /// Initializes method channel and register method call delegate.
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
-            name: "msal_auth", binaryMessenger: registrar.messenger())
+            name: "msal_auth", binaryMessenger: registrar.messenger)
         let instance = MsalAuthPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
-    /// Handles method calls received from Dart.
     public func handle(
         _ call: FlutterMethodCall, result: @escaping FlutterResult
     ) {
@@ -28,14 +23,12 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
                     }
                 }(),
                 let clientId = dict["clientId"] as? String,
-                let broker = dict["broker"] as? String,
                 let authorityType = dict["authorityType"] as? String
             else {
                 setInternalError(methodName: call.method, result: result)
                 return
             }
 
-            MsalAuth.broker = broker
             let authority = dict["authority"] as? String
 
             createPublicClientApplication(
@@ -183,26 +176,8 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        guard let viewController = UIViewController.keyViewController else {
-            return
-        }
-        let webViewParameters = MSALWebviewParameters(
-            authPresentationViewController: viewController)
-
-        MSALGlobalConfig.brokerAvailability = .auto
-        if #available(iOS 13.0, *) {
-            webViewParameters.prefersEphemeralWebBrowserSession = true
-            switch MsalAuth.broker {
-            case "webView":
-                webViewParameters.webviewType = .wkWebView
-                MSALGlobalConfig.brokerAvailability = .none
-            case "safariBrowser":
-                webViewParameters.webviewType = .safariViewController
-                MSALGlobalConfig.brokerAvailability = .none
-            default:
-                webViewParameters.webviewType = .default
-            }
-        }
+        let webViewParameters = MSALWebviewParameters()
+        webViewParameters.prefersEphemeralWebBrowserSession = true
 
         let tokenParams = MSALInteractiveTokenParameters(
             scopes: scopes, webviewParameters: webViewParameters)
@@ -391,7 +366,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     }
 
     /// Removes account from public client application. used with multiple account mode.
-    /// - Parameters: 
+    /// - Parameters:
     ///   - identifier: Account identifier.
     ///   - result: Result of the method call.
     private func removeAccount(
@@ -539,22 +514,5 @@ extension MsalAuthPlugin {
             FlutterError(
                 code: code, message: error.localizedDescription,
                 details: errorDetails))
-    }
-}
-
-// MARK: - UIViewController
-extension UIViewController {
-    static var keyViewController: UIViewController? {
-        if #available(iOS 15, *) {
-            return
-                (UIApplication.shared.connectedScenes.filter({
-                    $0.activationState == .foregroundActive
-                }).compactMap({ $0 as? UIWindowScene }).first?.windows.filter({
-                    $0.isKeyWindow
-                }).first?.rootViewController)!
-        } else {
-            return UIApplication.shared.windows.first(where: { $0.isKeyWindow }
-            )?.rootViewController
-        }
     }
 }
