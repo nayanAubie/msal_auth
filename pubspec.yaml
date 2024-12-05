@@ -26,3 +26,5 @@ flutter:
         pluginClass: MsalAuthPlugin
       ios:
         pluginClass: MsalAuthPlugin
+      macos:
+        pluginClass: MsalAuthPlugin

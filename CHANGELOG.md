@@ -1,3 +1,8 @@
+## 3.2.0
+- Added support for the `macOS` platform.
+- **BREAKING CHANGES:**
+  - `IosConfig` class has been renamed to `AppleConfig` and now this configuration class supports iOS and macOS. `broker` property of this class is used only for iOS.
+
 ## 3.0.1
 - Added `Account Mode` related instructions for Android in the README & fixed Dart analysis.
 

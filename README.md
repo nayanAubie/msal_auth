@@ -6,9 +6,9 @@ Microsoft Authentication 🔐 Library for Flutter.
 
 ## Platform Support
 
-| Android | iOS     |
-|---------|---------|
-| SDK 21+ | iOS 14+ |
+| Android | iOS     | macOS   |
+|---------|---------|---------|
+| SDK 21+ | 14+     | 10.15+  |
 
 ## Features 🚀
 
@@ -38,7 +38,7 @@ To implement `MSAL` in Flutter, you first need to set up an app in the `Azure Po
 
   ![Azure Dashboard](/Screenshots/Azure-Dashboard.png)
 
-- Next, you need to add platform-specific configurations for **Android** and **iOS** in the Azure Portal. To do this, navigate to `Manage > Authentication > Add platform`.
+- Next, you need to add platform-specific configurations for **Android** and **iOS/macOS** in the Azure Portal. To do this, navigate to `Manage > Authentication > Add platform`.
 
 ---
 
@@ -56,9 +56,9 @@ To implement `MSAL` in Flutter, you first need to set up an app in the `Azure Po
 
 ---
   
-### iOS Setup - Azure portal
+### iOS/macOS Setup - Azure portal
 
-- For iOS, You need to provide only `Bundle ID`. `Redirect URI` will be generated automatically by system.
+- You need to provide only `Bundle ID` of your iOS/macOS app. `Redirect URI` will be generated automatically by system.
 
   ![iOS Redirect URI](/Screenshots/iOS-Redirect-URI.png)
 
@@ -245,6 +245,19 @@ func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
 
 > See more info on [iOS MSAL configuration].
 
+## macOS Configuration
+
+- Add a new keychain group `com.microsoft.identity.universalstorage` to your project capabilities.
+  
+  ![macOS Keychain Sharing](/Screenshots/macOS-Keychain-Sharing.png)
+
+- If you encounter the `NSPOSIXErrorDomain` error while using `acquireToken` in a macOS debug app, it indicates a missing network entitlement required for the app in debug mode. To fix this issue, add the following configuration to the [`DebugProfile.entitlements`] file:
+
+  ```xml
+  <key>com.apple.security.network.client</key>
+  <true/>
+  ```
+
 ## Code Implementation 👨‍💻
 
 This section covers how to write the `Dart` code to set up an `MSAL` application in `Flutter` and authenticate the user.
@@ -260,21 +273,21 @@ final msalAuth = await SingleAccountPca.create(
     configFilePath: 'assets/msal_config.json',
     redirectUri: '<Android Redirect URI>',
   ),
-  iosConfig: IosConfig(
+  appleConfig: AppleConfig(
     authority: '<Optional, but must be provided for b2c>',
-    // Change broker if you need.
-    broker: Broker.msAuthenticator,
     // Change authority type to 'b2c' for business to customer flow.
     authorityType: AuthorityType.aad,
+    // Change broker if you need. Applicable only for iOS platform.
+    broker: Broker.msAuthenticator,
   ),
 );
 ```
-  
-- On `iOS`, if the broker is set to `AuthMiddleware.msAuthenticator` and the `Authenticator` app is not installed on the device, it will fall back to using `Safari Browser` for authentication.
 
 - By default, login will be attempted to AAD (Microsoft Entra ID). if you want to use B2C, set the `authorityType` to `AuthorityType.b2c`.
 
-- To modify value of `authority` in `iOS`, follow [Configure iOS authority].
+- To modify value of `authority` in `iOS/macOS`, follow [Configure iOS/macOS authority].
+
+- On `iOS`, if the broker is set to `AuthMiddleware.msAuthenticator` and the `Authenticator` app is not installed on the device, it will fall back to using `Safari Browser` for authentication.
 
 ---
 
@@ -336,9 +349,9 @@ All other types of exceptions are optional to handle, depending on your use case
 
 ### Exception Handling 🚨
 
-All MSAL exceptions thrown by the Android and iOS platforms can be handled on the Dart side. You can manage them according to your use case, such as by logging the errors, displaying user-friendly messages, retrying the operation, or triggering specific app behaviors based on the type of exception.
+All MSAL exceptions thrown by the Android and iOS/macOS platforms can be handled on the Dart side. You can manage them according to your use case, such as by logging the errors, displaying user-friendly messages, retrying the operation, or triggering specific app behaviors based on the type of exception.
 
-You can learn more about [MSAL exceptions - Android] and [MSAL exceptions - iOS].
+You can learn more about [MSAL exceptions - Android] and [MSAL exceptions - iOS/macOS].
 
 ---
 
@@ -353,10 +366,10 @@ To set it up, create a `.env/development.env` file in the root of your project a
 ```ini
 AAD_CLIENT_ID=your-apps-client-id
 AAD_ANDROID_REDIRECT_URI=your-android-apps-redirect-uri
-AAD_IOS_AUTHORITY=https://login.microsoftonline.com/common
+AAD_APPLE_AUTHORITY=https://login.microsoftonline.com/common
 ```
 
-Use B2C authority URL in `AAD_IOS_AUTHORITY` if your app uses `b2c` flow.
+Use B2C authority URL in `AAD_APPLE_AUTHORITY` if your app uses `b2c` flow.
 
 Follow [`example`] code for more details on implementation.
 
@@ -368,8 +381,9 @@ Follow [`example`] code for more details on implementation.
 [Android MSAL Authority]: https://learn.microsoft.com/en-us/entra/identity-platform/msal-configuration#authorities
 [iOS MSAL configuration]: https://learn.microsoft.com/en-us/entra/msal/objc/install-and-configure-msal#configuring-your-project-to-use-msal
 [Microsoft Authenticator]: https://apps.apple.com/us/app/microsoft-authenticator/id983156458
-[Configure iOS authority]: https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#change-the-default-authority
+[Configure iOS/macOS authority]: https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#change-the-default-authority
 [MSAL exceptions - Android]: https://learn.microsoft.com/en-us/entra/identity-platform/msal-android-handling-exceptions
-[MSAL exceptions - iOS]: https://learn.microsoft.com/en-us/entra/msal/objc/error-handling-ios
+[MSAL exceptions - iOS/macOS]: https://learn.microsoft.com/en-us/entra/msal/objc/error-handling-ios
 [`example`]: example
 [`AppDelegate.swift`]: example/ios/Runner/AppDelegate.swift
+[`DebugProfile.entitlements`]: example/macos/Runner/DebugProfile.entitlements

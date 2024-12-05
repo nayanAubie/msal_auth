@@ -30,18 +30,18 @@ final class MsalAuthService {
   /// Creates the public client application based on the given account mode.
   Future<(bool, MsalException?)> createPublicClientApplication({
     required AccountMode accountMode,
-    required Broker broker,
     required AuthorityType authorityType,
+    required Broker broker,
   }) async {
     final androidConfig = AndroidConfig(
       configFilePath: 'assets/msal_config.json',
       redirectUri: Environment.aadAndroidRedirectUri,
     );
 
-    final iOsConfig = IosConfig(
+    final appleConfig = AppleConfig(
       authority: Environment.aadIosAuthority,
-      broker: broker,
       authorityType: authorityType,
+      broker: broker,
     );
 
     try {
@@ -49,7 +49,7 @@ final class MsalAuthService {
         singleAccountPca = await SingleAccountPca.create(
           clientId: clientId,
           androidConfig: androidConfig,
-          iosConfig: iOsConfig,
+          appleConfig: appleConfig,
         );
         publicClientApplication = singleAccountPca;
         multipleAccountPca = null;
@@ -57,7 +57,7 @@ final class MsalAuthService {
         multipleAccountPca = await MultipleAccountPca.create(
           clientId: clientId,
           androidConfig: androidConfig,
-          iosConfig: iOsConfig,
+          appleConfig: appleConfig,
         );
         publicClientApplication = multipleAccountPca;
         singleAccountPca = null;
