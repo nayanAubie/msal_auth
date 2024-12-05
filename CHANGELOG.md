@@ -1,4 +1,4 @@
-## 3.2.0
+## 3.1.0
 - Added support for the `macOS` platform.
 - **BREAKING CHANGES:**
   - `IosConfig` class has been renamed to `AppleConfig` and now this configuration class supports iOS and macOS. `broker` property of this class is used only for iOS.
