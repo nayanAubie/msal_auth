@@ -1,3 +1,7 @@
+## 3.1.1
+- Made the `name` nullable in `Account` class because it may be null if the user is registered without setting a name.
+- Used default authority in example's `msal_config.json`.
+
 ## 3.1.0
 - Added support for the `macOS` platform.
 - **BREAKING CHANGES:**
