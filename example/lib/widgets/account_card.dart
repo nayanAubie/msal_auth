@@ -28,7 +28,7 @@ class AccountCard extends StatelessWidget {
               ),
               ListTile(
                 title: Text('Name'),
-                subtitle: Text(account.name),
+                subtitle: Text(account.name ?? 'N/A'),
               ),
             ],
           ),

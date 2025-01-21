@@ -9,6 +9,7 @@ final class Account {
   final String? username;
 
   /// Name received from account claims.
+  /// It may be null if the user is registered without setting a name.
   final String? name;
 
   Account({
