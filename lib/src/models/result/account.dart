@@ -9,7 +9,7 @@ final class Account {
   final String? username;
 
   /// Name received from account claims.
-  final String name;
+  final String? name;
 
   Account({
     required this.id,
