@@ -23,6 +23,9 @@ class MobilePublicClientApplication extends PublicClientApplication {
     /// Value is used as an identity provider to pre-fill a user's
     /// email address or username in the login form.
     String? loginHint,
+
+    /// Use redirect flow instead of popup. Only used on web.
+    bool webUseRedirect = false,
   }) async {
     assert(scopes.isNotEmpty, 'Scopes can not be empty');
     final arguments = <String, dynamic>{
