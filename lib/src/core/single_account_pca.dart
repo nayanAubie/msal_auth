@@ -1,9 +1,8 @@
-import 'package:flutter/foundation.dart';
-
 import '../../msal_auth.dart';
-import 'mobile/mobile_single_account_pca.dart';
+import '../models/config/web_config.dart';
+import 'mobile/pca_factory.dart'
+    if (dart.library.js_interop) 'web/pca_factory.dart' as pca_factory;
 import 'platform_single_account_pca.dart';
-import 'web/web_single_account_pca.dart';
 
 /// This class is used to create public client application for single account
 /// mode.
@@ -22,15 +21,18 @@ final class SingleAccountPca implements PlatformSingleAccountPca {
 
     /// iOS configuration, required for iOS platform.
     IosConfig? iosConfig,
+
+    /// Web configuration, required for web platform.
+    WebConfig? webConfig,
   }) async {
-    final pca = kIsWeb
-        ? await WebSingleAccountPca.create()
-        : await MobileSingleAccountPca.create(
-            clientId: clientId,
-            androidConfig: androidConfig,
-            iosConfig: iosConfig,
-          );
-    return SingleAccountPca._create(pca);
+    final PlatformSingleAccountPca delegate;
+    delegate = await pca_factory.createSingleAccountPca(
+      clientId: clientId,
+      androidConfig: androidConfig,
+      iosConfig: iosConfig,
+      webConfig: webConfig,
+    );
+    return SingleAccountPca._create(delegate);
   }
 
   @override

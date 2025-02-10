@@ -1,9 +1,8 @@
-import 'package:flutter/foundation.dart';
-
 import '../../msal_auth.dart';
-import 'mobile/mobile_multiple_account_pca.dart';
+import '../models/config/web_config.dart';
+import 'mobile/pca_factory.dart'
+    if (dart.library.js_interop) 'web/pca_factory.dart' as pca_factory;
 import 'platform_multiple_account_pca.dart';
-import 'web/web_multiple_platform_pca.dart';
 
 /// This class is used to create public client application for multiple account
 /// mode.
@@ -22,15 +21,18 @@ final class MultipleAccountPca implements PlatformMultipleAccountPca {
 
     /// iOS configuration, required for iOS platform.
     IosConfig? iosConfig,
+
+    /// Web configuration, required for web platform.
+    WebConfig? webConfig,
   }) async {
-    final pca = kIsWeb
-        ? await WebMultipleAccountPca.create()
-        : await MobileMultipleAccountPca.create(
-            clientId: clientId,
-            androidConfig: androidConfig,
-            iosConfig: iosConfig,
-          );
-    return MultipleAccountPca._create(pca);
+    final PlatformMultipleAccountPca delegate;
+    delegate = await pca_factory.createMultipleAccountPca(
+      clientId: clientId,
+      androidConfig: androidConfig,
+      iosConfig: iosConfig,
+      webConfig: webConfig,
+    );
+    return MultipleAccountPca._create(delegate);
   }
 
   @override
