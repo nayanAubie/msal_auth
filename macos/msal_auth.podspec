@@ -9,9 +9,9 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 A new Flutter plugin for Azure AD authentication.
                        DESC
-  s.homepage         = 'https://www.auberginesolutions.com'
+  s.homepage         = 'https://www.aubergine.co'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Aubergine Solutions Pvt. Ltd.' => 'flutterdev@auberginesolutions.com' }
+  s.author           = { 'Aubergine Solutions Pvt. Ltd.' => 'flutterdev@aubergine.co' }
 
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
