@@ -219,7 +219,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             }
         }
 
-        if account != nil {
+        if account != nil && promptType == .promptIfNecessary {
             acquireTokenSilent(
                 scopes: scopes, identifier: account?.identifier, result: result)
             return
