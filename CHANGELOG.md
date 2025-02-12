@@ -1,3 +1,6 @@
+## 3.1.2
+- Upgrade Android configuration to support latest Gradle version.
+
 ## 3.1.1
 - Made the `name` nullable in `Account` class because it may be null if the user is registered without setting a name.
 - Used default authority in example's `msal_config.json`.
