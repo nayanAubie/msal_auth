@@ -46,7 +46,7 @@ final class MsalAuthService {
 
     final webConfig = WebConfig(
       clientId: clientId,
-      tenant: Environment.aadTenantId,
+      tenant: Environment.aadTenant,
       redirectUri: Environment.webRedirectUri,
     );
 
