@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:msal_auth/msal_auth.dart';
 
@@ -119,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
               hintText: 'Login hint (Optional)',
             ),
           ),
-          if (Platform.isIOS) ...[
+          if (defaultTargetPlatform == TargetPlatform.iOS) ...[
             SizedBox(height: 24),
             Text(
               'iOS Specific',

@@ -44,12 +44,19 @@ final class MsalAuthService {
       authorityType: authorityType,
     );
 
+    final webConfig = WebConfig(
+      clientId: clientId,
+      tenant: Environment.aadTenant,
+      redirectUri: Environment.webRedirectUri,
+    );
+
     try {
       if (accountMode == AccountMode.single) {
         singleAccountPca = await SingleAccountPca.create(
           clientId: clientId,
           androidConfig: androidConfig,
           iosConfig: iOsConfig,
+          webConfig: webConfig,
         );
         publicClientApplication = singleAccountPca;
         multipleAccountPca = null;
@@ -58,6 +65,7 @@ final class MsalAuthService {
           clientId: clientId,
           androidConfig: androidConfig,
           iosConfig: iOsConfig,
+          webConfig: webConfig,
         );
         publicClientApplication = multipleAccountPca;
         singleAccountPca = null;
