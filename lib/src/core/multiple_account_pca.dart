@@ -2,7 +2,7 @@ part of 'public_client_application.dart';
 
 /// This class is used to create public client application for multiple account
 /// mode.
-final class MultipleAccountPca extends PublicClientApplication {
+class MultipleAccountPca extends PublicClientApplication {
   MultipleAccountPca._create();
 
   /// Creates multiple account public client application.

@@ -2,7 +2,7 @@ part of 'public_client_application.dart';
 
 /// This class is used to create public client application for single account
 /// mode.
-final class SingleAccountPca extends PublicClientApplication {
+class SingleAccountPca extends PublicClientApplication {
   SingleAccountPca._create();
 
   /// Creates single account public client application.
