@@ -1,6 +1,13 @@
+## 3.1.4
+- Upgrade MSAL native libraries:
+  - Android: `5.10.+`
+  - Apple: `1.7.0`
+- Fixed an issue of casting `List<Object>` to `List<String>` in the `MsalDeclinedScopeException`. [#issue/83](https://github.com/nayanAubie/msal_auth/issues/83)
+- Make `idToken`, `tenantId` and `correlationId` nullable in `AuthenticationResult`. [#issue/81](https://github.com/nayanAubie/msal_auth/issues/81)
+
 ## 3.1.3
 - Fixed a crash when opening the app from TestFlight on iOS. [#issue/25](https://github.com/nayanAubie/msal_auth/issues/25)
-- Allowed to extend the `SingleAccountPca` & `MultipleAccountPca` classes [#issue/81](https://github.com/nayanAubie/msal_auth/issues/81)
+- Allowed to extend the `SingleAccountPca` & `MultipleAccountPca` classes. [#issue/81](https://github.com/nayanAubie/msal_auth/issues/81)
 
 ## 3.1.2
 - Upgrade Android configuration to support latest Gradle version.
