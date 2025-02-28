@@ -11,8 +11,8 @@ extension PlatformExceptionUtils on PlatformException {
       case 'DECLINED_SCOPE':
         final map = details.cast<String, dynamic>();
         return MsalDeclinedScopeException(
-          grantedScopes: map['grantedScopes'],
-          declinedScopes: map['declinedScopes'],
+          grantedScopes: map['grantedScopes'].cast<String>(),
+          declinedScopes: map['declinedScopes'].cast<String>(),
           message: message!,
         );
       case 'PROTECTION_POLICY_REQUIRED':
