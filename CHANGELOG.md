@@ -1,3 +1,7 @@
+## 3.1.3
+- Fixed a crash when opening the app from TestFlight on iOS. [#issue/25](https://github.com/nayanAubie/msal_auth/issues/25)
+- Allowed to extend the `SingleAccountPca` & `MultipleAccountPca` classes [#issue/81](https://github.com/nayanAubie/msal_auth/issues/81)
+
 ## 3.1.2
 - Upgrade Android configuration to support latest Gradle version.
 
