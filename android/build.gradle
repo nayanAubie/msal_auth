@@ -1,7 +1,7 @@
 group 'com.example.msal_auth'
 version '1.0-SNAPSHOT'
 
-def msalVersion = "5.7.+"
+def msalVersion = "5.10.+"
 
 if (project.hasProperty("distMsalVersion")) {
     msalVersion = distMsalVersion

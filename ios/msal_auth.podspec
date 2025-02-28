@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'msal_auth'
-  s.version          = '2.0.1'
+  s.version          = '2.0.2'
   s.summary          = 'A new Flutter plugin for Azure AD authentication.'
   s.description      = <<-DESC
 A new Flutter plugin for Azure AD authentication.
@@ -16,7 +16,7 @@ A new Flutter plugin for Azure AD authentication.
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.platform = :ios, '14.0'
-  s.dependency 'MSAL', '~> 1.6.1'
+  s.dependency 'MSAL', '~> 1.7.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
