@@ -551,7 +551,7 @@ extension UIViewController {
                     $0.activationState == .foregroundActive
                 }).compactMap({ $0 as? UIWindowScene }).first?.windows.filter({
                     $0.isKeyWindow
-                }).first?.rootViewController)!
+                }).first?.rootViewController)
         } else {
             return UIApplication.shared.windows.first(where: { $0.isKeyWindow }
             )?.rootViewController
