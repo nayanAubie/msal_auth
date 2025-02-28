@@ -18,21 +18,21 @@ final class AuthenticationResult {
   /// Gets the JWT format id_token. This value conforms to "RFC-7519" and
   /// is further specified according to "OpenID Connect Core".
   /// Note: MSAL does not validate the JWT token.
-  final String idToken;
+  final String? idToken;
 
   /// Authority used in creating the app.
   final String authority;
 
   /// A unique tenant identifier that was used in token acquisition.
   /// Could be null if tenant information is not returned by the service.
-  final String tenantId;
+  final String? tenantId;
 
   /// The scopes returned from the service.
   final List<String> scopes;
 
   /// Gets the correlation id used during the acquire token request.
   /// Could be null if an error occurs when parsing from String or if not set.
-  final String correlationId;
+  final String? correlationId;
 
   /// Microsoft account details.
   final Account account;
