@@ -58,11 +58,12 @@ body:
       label: Android JSON Configuration
       description: |
         If the issue occurred on Android, provide your JSON configuration.
-        The minimal required keys are:  
-        - `authorities`  
-        - `authorization_user_agent`  
-        - `broker_redirect_uri_registered`  
-        - `account_mode`  
+        The minimal required keys are:
+        - `authorities`
+        - `authorization_user_agent`
+        - `broker_redirect_uri_registered`
+        - `account_mode`
+        
         This helps us reproduce and debug the issue more effectively.
       placeholder: |
         {
