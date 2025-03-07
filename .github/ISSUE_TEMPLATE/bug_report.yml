@@ -1,14 +1,14 @@
 name: Bug Report
 description: Report a bug or unexpected behavior.
 labels: [ "bug" ]
-assignees:
-  - nayanAubie
+
 body:
   - type: markdown
     attributes:
       value: |
         **Thank you for taking the time to report this bug!**
         Your feedback helps us improve the project. Please ensure you've provided all necessary details to help us investigate the issue efficiently.
+
   - type: textarea
     id: description
     attributes:
@@ -19,6 +19,7 @@ body:
       placeholder: Describe the issue in detail...
     validations:
       required: true
+
   - type: input
     id: plugin-version
     attributes:
@@ -29,6 +30,7 @@ body:
       placeholder: x.x.x
     validations:
       required: true
+
   - type: checkboxes
     id: platform
     attributes:
@@ -41,6 +43,7 @@ body:
           required: false
         - label: MacOS
           required: false
+
   - type: dropdown
     id: account-mode
     attributes:
@@ -52,6 +55,7 @@ body:
         - Multiple
     validations:
       required: true
+
   - type: textarea
     id: android-json-config
     attributes:
@@ -73,6 +77,7 @@ body:
       render: json
     validations:
       required: false
+
   - type: textarea
     id: dart-code
     attributes:
@@ -87,6 +92,7 @@ body:
       render: dart
     validations:
       required: true
+
   - type: textarea
     id: logs
     attributes:
@@ -96,6 +102,7 @@ body:
       render: shell
     validations:
       required: false
+
   - type: checkboxes
     id: confirmation
     attributes:
@@ -106,6 +113,7 @@ body:
           required: true
         - label: I have run the [example](https://github.com/nayanAubie/msal_auth/tree/main/example) app and the issue still exists.
           required: true
+
   - type: textarea
     id: flutter-doctor-output
     attributes:
