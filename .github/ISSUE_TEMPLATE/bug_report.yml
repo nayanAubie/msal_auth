@@ -1,0 +1,129 @@
+name: Bug Report
+description: Report a bug or unexpected behavior.
+labels: [ "bug" ]
+assignees:
+  - nayanAubie
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thank you for taking the time to report this bug!**
+        Your feedback helps us improve the project. Please ensure you've provided all necessary details to help us investigate the issue efficiently.
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue description
+      description: |
+        Clearly describe the issue, including steps to reproduce it.
+        Attach screenshots or videos if applicable for better clarity.
+      placeholder: Describe the issue in detail...
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: MSAL Auth Plugin Version
+      description: |
+        Provide the **exact version** of the MSAL Auth plugin from your `pubspec.lock` file.
+        This ensures you're reporting the version actually used in your project.
+      placeholder: x.x.x
+    validations:
+      required: true
+  - type: checkboxes
+    id: platform
+    attributes:
+      label: Platforms
+      description: Select the platforms where you encountered this issue.
+      options:
+        - label: Android
+          required: false
+        - label: iOS
+          required: false
+        - label: MacOS
+          required: false
+  - type: dropdown
+    id: account-mode
+    attributes:
+      label: Account Mode
+      description: Select the account mode you are using.
+      multiple: true
+      options:
+        - Single
+        - Multiple
+    validations:
+      required: true
+  - type: textarea
+    id: android-json-config
+    attributes:
+      label: Android JSON Configuration
+      description: |
+        If the issue occurred on Android, provide your JSON configuration.
+        The minimal required keys are:  
+        - `authorities`  
+        - `authorization_user_agent`  
+        - `broker_redirect_uri_registered`  
+        - `account_mode`  
+        This helps us reproduce and debug the issue more effectively.
+      placeholder: |
+        {
+          "authorization_user_agent": "BROWSER",
+          "broker_redirect_uri_registered": true
+        }
+      render: json
+    validations:
+      required: false
+  - type: textarea
+    id: dart-code
+    attributes:
+      label: Minimal Dart Code Snippet
+      description: |
+        Provide a minimal Dart code snippet that reproduces the issue.
+        This will be automatically formatted into Dart code.
+      placeholder: |
+        void main() {
+          print("Hello, Dart!");
+        }
+      render: dart
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: |
+        Please copy and paste any relevant log output.
+      render: shell
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Before submitting, please confirm
+      description: Ensure you have completed the following steps before reporting an issue.
+      options:
+        - label: I have checked the [documentation](https://pub.dev/packages/msal_auth) and it does not solve my issue.
+          required: true
+        - label: I have run the [example](https://github.com/nayanAubie/msal_auth/tree/main/example) app and the issue still exists.
+          required: true
+  - type: textarea
+    id: flutter-doctor-output
+    attributes:
+      label: Flutter Doctor Output
+      description: |
+        Run the following command in your terminal and paste the full output below:
+        ```
+        flutter doctor
+        ```
+        If needed, you can add **verbose output** (`flutter doctor -v`) for more details.
+        This information helps diagnose environment-related issues effectively.
+      placeholder: |
+        [✓] Flutter (Channel stable, 3.x.x, on macOS 15.x, locale en-US)
+        [✓] Android toolchain - develop for Android devices (Android SDK version 35.0.0)
+        [✓] Xcode - develop for iOS and macOS (Xcode 16.x)
+        [✓] Chrome - develop for the web
+        [✓] Android Studio (version 2024.x)
+        [✓] VS Code (version 1.98.0)
+        [✓] Connected device (3 available)
+      render: shell
+    validations:
+      required: true

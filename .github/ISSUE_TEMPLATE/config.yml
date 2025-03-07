@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Need help with MSAL Auth?
+    url: https://stackoverflow.com/tags/msal-auth
+    about: Ask your questions about using the MSAL Auth plugin on Stack Overflow.
+
+  - name: General discussions & feature requests
+    url: https://github.com/nayanAubie/msal_auth/discussions
+    about: Join discussions or suggest new features for MSAL Auth.
