@@ -1,0 +1,77 @@
+name: Feature Request
+description: Suggest a new feature or improvement for the MSAL Auth Flutter plugin.
+labels: [ "feature request" ]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🚀 Feature Request
+        Thank you for taking the time to suggest an improvement!
+        Please provide as much detail as possible to help us understand your request.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: Provide a short and clear summary of the feature request.
+      placeholder: Support for multiple accounts in Web
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Detailed Description
+      description: Explain why this feature is needed and how it would improve the MSAL Auth Flutter plugin.
+      placeholder: Describe the feature in detail and its benefits.
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platforms Affected
+      description: Which platforms should this feature support? provide a comma-separated list.
+      placeholder: Android, iOS, Web
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe a real-world scenario where this feature would be useful.
+    validations:
+      required: false
+
+  - type: textarea
+    id: potential-api
+    attributes:
+      label: Proposed API (if applicable)
+      description: |
+        If this feature requires API changes, suggest how the API might look.
+        This will be automatically formatted into Dart code.
+      placeholder: |
+        final result = await MsalAuthService.instance.acquireToken();
+      render: dart
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered other ways to achieve this? If so, explain why they are not sufficient.
+      placeholder: Describe any workarounds or other solutions you tried.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other information, screenshots, or references that might help.
+      placeholder: Links, references, or related issues.
+    validations:
+      required: false
