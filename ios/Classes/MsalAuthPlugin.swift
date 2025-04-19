@@ -184,8 +184,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         }
 
         guard let viewController = UIViewController.keyViewController else {
+            setInternalError(methodName: "acquireToken", result: result)
             return
         }
+
         let webViewParameters = MSALWebviewParameters(
             authPresentationViewController: viewController)
 
@@ -210,35 +212,41 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         tokenParams.promptType = promptType
         tokenParams.loginHint = loginHint
 
-        var account: MSALAccount?
+        let handleAccount: (MSALAccount?) -> Void = { account in
+            if let account = account {
+                self.acquireTokenSilent(
+                    scopes: scopes, identifier: account.identifier, result: result)
+                return
+            }
 
-        // Call current account for single account mode. multiple account mode needs to give account identifier to get particular account.
+            pca.acquireToken(
+                with: tokenParams,
+                completionBlock: { (msalresult, error) in
+                    guard let msalResult = msalresult else {
+                        guard let error = error as NSError? else { return }
+                        self.setMsalError(error: error, result: result)
+                        return
+                    }
+                    result(self.getAuthResult(msalResult))
+                })
+        }
+
         if MsalAuth.pcaType == PublicClientApplicationType.single {
-            if let currentAccount = getCurrentAccount() {
-                account = currentAccount
+            getCurrentAccount(result: result, completion: handleAccount)
+        } else {
+            // Multiple account mode flow:
+            // 1. If loginHint is provided, get the specified account via getAccount
+            // 2. getAccount will call handleAccount through completion callback
+            // 3. handleAccount will first try to acquire token silently
+            // 4. If silent token acquisition fails, it will fall back to interactive authentication
+            if let identifier = loginHint {
+                getAccount(identifier: identifier, result: result, completion: handleAccount)
+            } else {
+                // If no loginHint is provided, proceed with interactive authentication directly
+                // User can select which account to use in the authentication UI
+                handleAccount(nil)
             }
         }
-
-        if account != nil {
-            acquireTokenSilent(
-                scopes: scopes, identifier: account?.identifier, result: result)
-            return
-        }
-
-        pca.acquireToken(
-            with: tokenParams,
-            completionBlock: { (msalresult, error) in
-                guard let msalResult = msalresult else {
-
-                    guard let error = error as NSError? else { return }
-
-                    self.setMsalError(error: error, result: result)
-
-                    return
-                }
-
-                result(self.getAuthResult(msalResult))
-            })
     }
 
     /// Acquires token from public client application.
@@ -255,72 +263,71 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        var account: MSALAccount!
+        let handleAccount: (MSALAccount?) -> Void = { account in
+            guard let account = account else {
+                self.setNoCurrentAccountError(result: result)
+                return
+            }
+
+            let silentParams = MSALSilentTokenParameters(
+                scopes: scopes, account: account)
+
+            pca.acquireTokenSilent(
+                with: silentParams,
+                completionBlock: { (msalResult, error) in
+                    guard let msalResult = msalResult else {
+                        guard let error = error as NSError? else { return }
+                        self.setMsalError(error: error, result: result)
+                        return
+                    }
+                    result(self.getAuthResult(msalResult))
+                })
+        }
 
         if MsalAuth.pcaType == PublicClientApplicationType.single {
-            account = getCurrentAccount()
+            getCurrentAccount(result: result, completion: handleAccount)
         } else {
-            account = getAccount(identifier: identifier!)
+            guard let identifier = identifier else {
+                setInternalError(methodName: "acquireTokenSilent", result: result)
+                return
+            }
+            getAccount(identifier: identifier, result: result, completion: handleAccount)
         }
-
-        guard let account else {
-            setNoCurrentAccountError(result: result)
-            return
-        }
-
-        let silentParams = MSALSilentTokenParameters(
-            scopes: scopes, account: account)
-
-        pca.acquireTokenSilent(
-            with: silentParams,
-            completionBlock: { (msalResult, error) in
-
-                guard let msalResult = msalResult else {
-
-                    guard let error = error as NSError? else { return }
-
-                    self.setMsalError(error: error, result: result)
-
-                    return
-                }
-
-                result(self.getAuthResult(msalResult))
-            })
     }
 
     /// Returns current account. used with single account mode.
-    /// - Parameter result: Result of the method call.
-    @discardableResult
-    private func getCurrentAccount(result: FlutterResult? = nil) -> MSALAccount?
-    {
+    /// - Parameters:
+    ///   - result: Result of the method call.
+    ///   - completion: Completion callback with MSALAccount
+    private func getCurrentAccount(
+        result: FlutterResult? = nil, completion: ((MSALAccount?) -> Void)? = nil
+    ) {
         guard let pca = MsalAuth.publicClientApplication else {
             if result != nil {
-                setPcaInitError(
-                    methodName: "getCurrentAccount", result: result!)
+                setPcaInitError(methodName: "getCurrentAccount", result: result!)
             }
-            return nil
+            completion?(nil)
+            return
         }
-
-        var account: MSALAccount!
 
         pca.getCurrentAccount(with: MSALParameters()) {
             current, previous, error in
             if let current {
-                account = current
-                result?(self.getCurrentAccountDic(current))
-                return
-            }
-
-            if let result {
-                if let error = error as NSError? {
-                    self.setMsalError(error: error, result: result)
-                    return
+                if let result = result {
+                    result(self.getCurrentAccountDic(current))
                 }
-
-                self.setNoCurrentAccountError(result: result)
+                completion?(current)
+            } else {
+                if let result = result {
+                    if let error = error as NSError? {
+                        self.setMsalError(error: error, result: result)
+                    } else {
+                        self.setNoCurrentAccountError(result: result)
+                    }
+                }
+                completion?(nil)
             }
         }
-        return account
     }
 
     /// Signs out from public client application. used with single account mode.
@@ -331,9 +338,14 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        if let currentAccount = getCurrentAccount() {
+        getCurrentAccount(result: result) { account in
+            guard let account = account else {
+                self.setNoCurrentAccountError(result: result)
+                return
+            }
+
             pca.signout(
-                with: currentAccount, signoutParameters: MSALSignoutParameters()
+                with: account, signoutParameters: MSALSignoutParameters()
             ) { success, error in
                 guard let error else {
                     result(success)
@@ -344,8 +356,6 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
                     self.setMsalError(error: error, result: result)
                 }
             }
-        } else {
-            setNoCurrentAccountError(result: result)
         }
     }
 
@@ -353,24 +363,30 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     /// - Parameters:
     ///   - identifier: Account identifier.
     ///   - result: Result of the method call.
-    @discardableResult
-    private func getAccount(identifier: String, result: FlutterResult? = nil)
-        -> MSALAccount?
-    {
+    ///   - completion: Completion callback with MSALAccount
+    private func getAccount(
+        identifier: String, result: FlutterResult? = nil,
+        completion: ((MSALAccount?) -> Void)? = nil
+    ) {
         guard let pca = MsalAuth.publicClientApplication else {
             if result != nil {
                 setPcaInitError(methodName: "getAccount", result: result!)
             }
-            return nil
+            completion?(nil)
+            return
         }
 
         do {
-            return try pca.account(forIdentifier: identifier)
+            let account = try pca.account(forIdentifier: identifier)
+            if let result = result {
+                result(getCurrentAccountDic(account))
+            }
+            completion?(account)
         } catch let error as NSError {
             if result != nil {
                 setMsalError(error: error, result: result!)
             }
-            return nil
+            completion?(nil)
         }
     }
 
@@ -391,7 +407,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     }
 
     /// Removes account from public client application. used with multiple account mode.
-    /// - Parameters: 
+    /// - Parameters:
     ///   - identifier: Account identifier.
     ///   - result: Result of the method call.
     private func removeAccount(
