@@ -184,6 +184,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         }
 
         guard let viewController = UIViewController.keyViewController else {
+            setUiNotReadyError(result: result)
             return
         }
         let webViewParameters = MSALWebviewParameters(
@@ -488,6 +489,16 @@ extension MsalAuthPlugin {
                 code: "INTERNAL_ERROR",
                 message: "There is no currently signed in account.",
                 details: "no_account"))
+    }
+
+    /// Sets ui not ready error to result.
+    /// - Parameter result: Result of the method call.
+    fileprivate func setUiNotReadyError(result: @escaping FlutterResult) {
+        result(
+            FlutterError(
+                code: "UI_NOT_READY_ERROR",
+                message: "The UI is not ready. UIViewController.keyViewController",
+                details: "UI not ready!"))
     }
 
     /// Common MSAL error handling function that returns error to Dart.
