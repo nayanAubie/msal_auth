@@ -58,6 +58,10 @@ class PublicClientApplication {
     String? identifier,
   }) async {
     assert(scopes.isNotEmpty, 'Scopes can not be empty');
+    assert(
+      this is MultipleAccountPca && identifier == null,
+      'Identifier can not be null for multiple account mode',
+    );
     final arguments = <String, dynamic>{
       'scopes': scopes,
       'identifier': identifier,
