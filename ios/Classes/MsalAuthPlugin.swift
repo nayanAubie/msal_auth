@@ -118,6 +118,15 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         authorityType: String,
         result: @escaping FlutterResult
     ) {
+        // Sets broker availability. this is required to avoid error on PCA creation
+        // when 'LSApplicationQueriesSchemes' is not defined in 'Info.plist'.
+        switch MsalAuth.broker {
+        case "webView", "safariBrowser":
+            MSALGlobalConfig.brokerAvailability = .none
+        default:
+            break
+        }
+        
         var pcaConfig: MSALPublicClientApplicationConfig!
 
         if authority != nil {
@@ -195,10 +204,8 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             switch MsalAuth.broker {
             case "webView":
                 webViewParameters.webviewType = .wkWebView
-                MSALGlobalConfig.brokerAvailability = .none
             case "safariBrowser":
                 webViewParameters.webviewType = .safariViewController
-                MSALGlobalConfig.brokerAvailability = .none
             default:
                 webViewParameters.webviewType = .default
             }
