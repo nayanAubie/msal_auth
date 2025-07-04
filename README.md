@@ -194,7 +194,7 @@ Follow the [Android MSAL Authority] documentation to configure it in various way
   </array>
   ```
 
-- Add `LSApplicationQueriesSchemes` to allow making call to [Microsoft Authenticator] app if installed.
+- Add `LSApplicationQueriesSchemes` to use the [Microsoft Authenticator] app as a broker for authentication. Not required when `Safari Browser` or `WebView` is used as a broker.
 
   ```plist
   <key>LSApplicationQueriesSchemes</key>
@@ -203,6 +203,8 @@ Follow the [Android MSAL Authority] documentation to configure it in various way
 	  <string>msauthv3</string>
   </array>
   ```
+
+  - If you use `Broker.msAuthenticator` after declaring the above schemes but the Authenticator app is not installed on the iPhone, the authentication will fall back to using `Safari Browser`.
 
 ---
 
