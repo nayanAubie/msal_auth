@@ -1,3 +1,7 @@
+## 3.1.5
+- Fixed an issue in iOS: "Unable to create public client application" when the app doesn't specify `LSApplicationQueriesSchemes` in `Info.plist`. [#issue/80](https://github.com/nayanAubie/msal_auth/issues/80)
+- Added an `assertion` in the `acquireTokenSilent` method to ensure `identifier` is not null when using multiple account mode. [#issue/93](https://github.com/nayanAubie/msal_auth/issues/93)
+
 ## 3.1.4
 - Upgrade MSAL native libraries:
   - Android: `5.10.+`
