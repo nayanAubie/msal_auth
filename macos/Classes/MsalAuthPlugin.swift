@@ -175,8 +175,18 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             setPcaInitError(methodName: "acquireToken", result: result)
             return
         }
+        
+        guard let mainWindow = NSApplication.shared.mainWindow,
+              let viewController = mainWindow.contentViewController else {
+            result(
+                FlutterError(
+                    code: "INTERNAL_ERROR",
+                    message: "ViewController is not available to present the WebView",
+                    details: nil))
+            return
+        }
 
-        let webViewParameters = MSALWebviewParameters()
+        let webViewParameters = MSALWebviewParameters(authPresentationViewController: viewController)
         webViewParameters.prefersEphemeralWebBrowserSession = true
 
         let tokenParams = MSALInteractiveTokenParameters(
