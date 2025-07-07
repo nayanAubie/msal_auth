@@ -1,3 +1,10 @@
+## 3.2.0
+- Upgrade MSAL native libraries:
+  - Android: `6.0.1` (Version fixed to ensure each release of `msal_auth` consistently uses a specific native MSAL version)
+  - Apple: `2.2.0`
+- Used modern `Gradle` syntax with updated Kotlin and Gradle wrapper version.
+- Migrated the Android example app from Groovy to Kotlin build scripts.
+
 ## 3.1.5
 - Fixed an issue in iOS: "Unable to create public client application" when the app doesn't specify `LSApplicationQueriesSchemes` in `Info.plist`. [#issue/80](https://github.com/nayanAubie/msal_auth/issues/80)
 - Added an `assertion` in the `acquireTokenSilent` method to ensure `identifier` is not null when using multiple account mode. [#issue/93](https://github.com/nayanAubie/msal_auth/issues/93)
