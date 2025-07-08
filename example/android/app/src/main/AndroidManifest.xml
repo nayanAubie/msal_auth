@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
@@ -35,7 +38,7 @@
 
                 <data
                     android:host="com.example.msal_auth_example"
-                    android:path="/d6fGnqW06DVdPPe3zG12HTV2QkI="
+                    android:path="/${msalSignatureHash}"
                     android:scheme="msauth" />
             </intent-filter>
         </activity>
