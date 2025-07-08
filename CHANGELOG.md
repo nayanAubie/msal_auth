@@ -1,3 +1,11 @@
+## 3.2.1
+- Updated `example` app to use the signature hash programmatically instead of hardcoding it in `AndroidManifest.xml`.
+- Updated the `example/README` for detailed instructions on how to set up the `example` app.
+- Update documentation for the following:
+  - Internet and Network State permissions in `AndroidManifest.xml`.
+  - Debug and release signature hash generation for Android.
+  - `ProGuard` setup within this plugin.
+
 ## 3.2.0
 - Upgrade MSAL native libraries:
   - Android: `6.0.1` (Version fixed to ensure each release of `msal_auth` consistently uses a specific native MSAL version)
