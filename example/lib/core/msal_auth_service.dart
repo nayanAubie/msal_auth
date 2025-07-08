@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:msal_auth/msal_auth.dart';
 
 import '../environment.dart';
@@ -35,7 +36,9 @@ final class MsalAuthService {
   }) async {
     final androidConfig = AndroidConfig(
       configFilePath: 'assets/msal_config.json',
-      redirectUri: Environment.aadAndroidRedirectUri,
+      redirectUri: kDebugMode
+          ? Environment.aadDebugAndroidRedirectUri
+          : Environment.aadReleaseAndroidRedirectUri,
     );
 
     final appleConfig = AppleConfig(
