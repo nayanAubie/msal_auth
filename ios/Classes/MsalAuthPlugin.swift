@@ -198,7 +198,6 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         let webViewParameters = MSALWebviewParameters(
             authPresentationViewController: viewController)
 
-        MSALGlobalConfig.brokerAvailability = .auto
         if #available(iOS 13.0, *) {
             webViewParameters.prefersEphemeralWebBrowserSession = true
             switch MsalAuth.broker {
