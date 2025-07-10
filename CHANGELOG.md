@@ -1,3 +1,6 @@
+## 3.2.3
+- Fixed an issue causing `MsalUiRequiredException` due to an internal call to `acquireTokenSilent` within the `acquireToken` method during native calls. [#issue/82](https://github.com/nayanAubie/msal_auth/issues/82)
+
 ## 3.2.2
 - Fixed an issue of broker in iOS due to broker availability was set to auto in the `acquireToken` method.
 
