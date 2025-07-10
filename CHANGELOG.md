@@ -1,3 +1,6 @@
+## 3.2.2
+- Fixed an issue of broker in iOS due to broker availability was set to auto in the `acquireToken` method.
+
 ## 3.2.1
 - Updated `example` app to use the signature hash programmatically instead of hardcoding it in `AndroidManifest.xml`.
 - Updated the `example/README` for detailed instructions on how to set up the `example` app.
