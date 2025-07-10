@@ -195,21 +195,6 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         tokenParams.promptType = promptType
         tokenParams.loginHint = loginHint
 
-        var account: MSALAccount?
-
-        // Call current account for single account mode. multiple account mode needs to give account identifier to get particular account.
-        if MsalAuth.pcaType == PublicClientApplicationType.single {
-            if let currentAccount = getCurrentAccount() {
-                account = currentAccount
-            }
-        }
-
-        if account != nil {
-            acquireTokenSilent(
-                scopes: scopes, identifier: account?.identifier, result: result)
-            return
-        }
-
         pca.acquireToken(
             with: tokenParams,
             completionBlock: { (msalresult, error) in
