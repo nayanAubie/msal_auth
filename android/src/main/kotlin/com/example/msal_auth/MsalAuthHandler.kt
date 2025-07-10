@@ -147,36 +147,16 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
             return
         }
 
-        if (msal.iSingleAccountPca != null) {
-            msal.iSingleAccountPca!!.currentAccount?.let { accountResult ->
-                if (accountResult.currentAccount != null) {
-                    acquireTokenSilent(scopes, null, result)
-                } else {
-                    msal.activity.let {
-                        val builder = AcquireTokenParameters.Builder()
-                        builder.startAuthorizationFromActivity(it)
-                            .withScopes(scopes.toList())
-                            .withPrompt(prompt)
-                            .withLoginHint(loginHint)
-                            .withCallback(msal.authenticationCallback(result))
+        msal.activity.let {
+            val builder = AcquireTokenParameters.Builder()
+            builder.startAuthorizationFromActivity(it)
+                .withScopes(scopes.toList())
+                .withPrompt(prompt)
+                .withLoginHint(loginHint)
+                .withCallback(msal.authenticationCallback(result))
 
-                        val acquireTokenParameters = builder.build()
-                        msal.iPublicClientApplication.acquireToken(acquireTokenParameters)
-                    }
-                }
-            }
-        } else if (msal.iMultipleAccountPca != null) {
-            msal.activity.let {
-                val builder = AcquireTokenParameters.Builder()
-                builder.startAuthorizationFromActivity(it)
-                    .withScopes(scopes.toList())
-                    .withPrompt(prompt)
-                    .withLoginHint(loginHint)
-                    .withCallback(msal.authenticationCallback(result))
-
-                val acquireTokenParameters = builder.build()
-                msal.iPublicClientApplication.acquireToken(acquireTokenParameters)
-            }
+            val acquireTokenParameters = builder.build()
+            msal.iPublicClientApplication.acquireToken(acquireTokenParameters)
         }
     }
 
