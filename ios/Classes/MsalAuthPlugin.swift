@@ -193,6 +193,11 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         }
 
         guard let viewController = UIViewController.keyViewController else {
+            result(
+                FlutterError(
+                    code: "UI_UNAVAILABLE",
+                    message: "Cannot present authentication UI. The view controller is not available. This may occur during app launch transitions. Retry with putting a delay of 500 ms.",
+                    details: nil))
             return
         }
         let webViewParameters = MSALWebviewParameters(
@@ -539,7 +544,7 @@ extension UIViewController {
         if #available(iOS 15, *) {
             return
                 (UIApplication.shared.connectedScenes.filter({
-                    $0.activationState == .foregroundActive
+                    $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive
                 }).compactMap({ $0 as? UIWindowScene }).first?.windows.filter({
                     $0.isKeyWindow
                 }).first?.rootViewController)
