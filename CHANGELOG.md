@@ -1,3 +1,7 @@
+## 3.2.4
+- Handle UI unavailable error in `acquireToken` method and adjust view controller retrieval logic. [#issue/101](https://github.com/nayanAubie/msal_auth/issues/101)
+- Add `authority` parameter support for `acquireToken` and `acquireTokenSilent` methods. [#issue/91](https://github.com/nayanAubie/msal_auth/issues/91)
+
 ## 3.2.3
 - Fixed an issue causing `MsalUiRequiredException` due to an internal call to `acquireTokenSilent` within the `acquireToken` method during native calls. [#issue/82](https://github.com/nayanAubie/msal_auth/issues/82)
 
