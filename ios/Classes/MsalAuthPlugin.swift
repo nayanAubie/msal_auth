@@ -29,13 +29,19 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
                 }(),
                 let clientId = dict["clientId"] as? String,
                 let broker = dict["broker"] as? String,
-                let authorityType = dict["authorityType"] as? String
+                let authorityType: AuthorityType = {
+                    switch call.method {
+                    case "b2c": return .b2c
+                    default: return .aad
+                    }
+                }()
             else {
                 setInternalError(methodName: call.method, result: result)
                 return
             }
 
             MsalAuth.broker = broker
+            MsalAuth.authorityType = authorityType
             let authority = dict["authority"] as? String
 
             createPublicClientApplication(
@@ -63,9 +69,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             }
 
             let loginHint = dict["loginHint"] as? String
+            let authority = dict["authority"] as? String
 
             acquireToken(
-                scopes: scopes, promptType: promptType, loginHint: loginHint,
+                scopes: scopes, promptType: promptType, loginHint: loginHint, authority: authority,
                 result: result)
         case "acquireTokenSilent":
             guard let dict = call.arguments as? NSDictionary,
@@ -76,9 +83,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             }
 
             let identifier = dict["identifier"] as? String
+            let authority = dict["authority"] as? String
 
             acquireTokenSilent(
-                scopes: scopes, identifier: identifier, result: result)
+                scopes: scopes, identifier: identifier, authority: authority, result: result)
 
         case "currentAccount": getCurrentAccount(result: result)
 
@@ -115,7 +123,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     private func createPublicClientApplication(
         pcaType: PublicClientApplicationType,
         clientId: String, authority: String?,
-        authorityType: String,
+        authorityType: AuthorityType,
         result: @escaping FlutterResult
     ) {
         // Sets broker availability. this is required to avoid error on PCA creation
@@ -141,7 +149,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
 
             do {
                 switch authorityType {
-                case "b2c":
+                case .b2c:
                     let b2cAuthority = try MSALB2CAuthority(url: authorityUrl)
                     pcaConfig = MSALPublicClientApplicationConfig(
                         clientId: clientId, redirectUri: nil,
@@ -182,9 +190,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     ///   - scopes: Scopes to be requested.
     ///   - promptType: Prompt type.
     ///   - loginHint: Login hint.
+    ///   - authority: Authority URL to override default authority.
     ///   - result: Result of the method call.
     private func acquireToken(
-        scopes: [String], promptType: MSALPromptType, loginHint: String?,
+        scopes: [String], promptType: MSALPromptType, loginHint: String?, authority: String?,
         result: @escaping FlutterResult
     ) {
         guard let pca = MsalAuth.publicClientApplication else {
@@ -221,6 +230,16 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         tokenParams.promptType = promptType
         tokenParams.loginHint = loginHint
         
+        if let authority = authority {
+            do {
+                let msalAuthority = try getMsalAuthority(authority: authority)
+                tokenParams.authority = msalAuthority
+            } catch let error as NSError {
+                setMsalError(error: error, result: result)
+                return
+            }
+        }
+        
         pca.acquireToken(
             with: tokenParams,
             completionBlock: { (msalresult, error) in
@@ -241,9 +260,10 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     /// - Parameters:
     ///   - scopes: Scopes to be requested.
     ///   - identifier: Account identifier.
+    ///   - authority: Authority URL to override cached account's authority.
     ///   - result: Result of the method call.
     private func acquireTokenSilent(
-        scopes: [String], identifier: String? = nil,
+        scopes: [String], identifier: String? = nil, authority: String?,
         result: @escaping FlutterResult
     ) {
         guard let pca = MsalAuth.publicClientApplication else {
@@ -266,6 +286,16 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
 
         let silentParams = MSALSilentTokenParameters(
             scopes: scopes, account: account)
+        
+        if let authority = authority {
+            do {
+                let msalAuthority = try getMsalAuthority(authority: authority)
+                silentParams.authority = msalAuthority
+            } catch let error as NSError {
+                setMsalError(error: error, result: result)
+                return
+            }
+        }
 
         pca.acquireTokenSilent(
             with: silentParams,
@@ -411,6 +441,18 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
 
 // MARK: - MsalAuthPlugin
 extension MsalAuthPlugin {
+    /// Returns the object of MSAL Authority based on the authority type.
+    /// - Parameter authority: authority URL in string.
+    /// - Returns: `MSALAuthority`.
+    fileprivate func getMsalAuthority(authority: String) throws -> MSALAuthority {
+        switch (MsalAuth.authorityType) {
+            case .b2c:
+            return try MSALB2CAuthority(url: URL(string: authority)!)
+        default:
+            return try MSALAuthority(url: URL(string: authority)!)
+        }
+    }
+    
     /// Returns auth result dictionary. used to set result to Dart.
     /// - Parameter authResult: Auth result.
     /// - Returns: Auth result dictionary.

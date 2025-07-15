@@ -330,7 +330,10 @@ final authResult = await publicClientApplication.acquireToken(
   // UI option for authentication, default is [Prompt.whenRequired]
   prompt: Prompt.login,
   // Provide 'loginHint' if you have.
-  loginHint: '<Email Id / Username / Unique Identifier>'
+  loginHint: '<Email Id / Username / Unique Identifier>',
+  // Optional: Custom authority URL for B2C or different
+  // tenant scenarios
+  authority: '<Authority URL>',
 );
 
 log('Auth result: ${authResult.toJson()}');
@@ -349,6 +352,10 @@ if (expiresOn.isBefore(DateTime.now())) {
   final authResult = await publicClientApplication.acquireTokenSilent(
     scopes: <String>[], // List of string same as "acquireToken()"
     identifier: 'Account Identifier, required for multiple account mode',
+    // Authority URL where you want to refresh tokens using
+    // a different policy than the original authentication.
+    // Required for B2C scenarios.
+    authority: '<Authority URL>',
   );
 
   log('Auth result: ${authResult.toJson()}');
