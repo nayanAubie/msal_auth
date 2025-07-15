@@ -26,12 +26,18 @@ class PublicClientApplication {
     /// Value is used as an identity provider to pre-fill a user's
     /// email address or username in the login form.
     String? loginHint,
+
+    /// Authority URL to override the default authority.
+    /// Required for "B2C" scenarios where different policies require
+    /// different authorities.
+    String? authority,
   }) async {
     assert(scopes.isNotEmpty, 'Scopes can not be empty');
     final arguments = <String, dynamic>{
       'scopes': scopes,
       'prompt': prompt.name,
       'loginHint': loginHint,
+      'authority': authority,
       'broker': Broker.msAuthenticator.name,
     };
     try {
@@ -56,6 +62,11 @@ class PublicClientApplication {
     /// Account identifier, basically id from account object.
     /// Required for multiple account mode.
     String? identifier,
+
+    /// Optional authority URL to override the cached account's authority.
+    /// Required for B2C scenarios where you want to refresh tokens using
+    /// a different policy than the one used for initial authentication.
+    String? authority,
   }) async {
     assert(scopes.isNotEmpty, 'Scopes can not be empty');
     if (this is MultipleAccountPca) {
@@ -67,6 +78,7 @@ class PublicClientApplication {
     final arguments = <String, dynamic>{
       'scopes': scopes,
       'identifier': identifier,
+      'authority': authority,
     };
     try {
       final result =

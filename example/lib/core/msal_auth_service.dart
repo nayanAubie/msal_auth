@@ -76,12 +76,14 @@ final class MsalAuthService {
   Future<(AuthenticationResult?, MsalException?)> acquireToken({
     String? loginHint,
     Prompt prompt = Prompt.whenRequired,
+    String? authority,
   }) async {
     try {
       final result = await publicClientApplication?.acquireToken(
         scopes: scopes,
         loginHint: loginHint,
         prompt: prompt,
+        authority: authority,
       );
       log('Acquire token => ${result?.toJson()}');
       return (result, null);
@@ -94,11 +96,13 @@ final class MsalAuthService {
   /// Common method for both account mode.
   Future<(AuthenticationResult?, MsalException?)> acquireTokenSilent({
     String? identifier,
+    String? authority,
   }) async {
     try {
       final result = await publicClientApplication?.acquireTokenSilent(
         scopes: scopes,
         identifier: identifier,
+        authority: authority,
       );
       log('Acquire token silent => ${result?.toJson()}');
       return (result, null);
@@ -107,7 +111,7 @@ final class MsalAuthService {
 
       // If it is a UI required exception, try to acquire token interactively.
       if (e is MsalUiRequiredException) {
-        return acquireToken();
+        return acquireToken(authority: authority);
       }
       return (null, e);
     }
