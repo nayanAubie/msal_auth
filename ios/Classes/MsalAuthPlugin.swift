@@ -132,7 +132,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
         case "webView", "safariBrowser":
             MSALGlobalConfig.brokerAvailability = .none
         default:
-            break
+            MSALGlobalConfig.brokerAvailability = .auto
         }
         
         var pcaConfig: MSALPublicClientApplicationConfig!
