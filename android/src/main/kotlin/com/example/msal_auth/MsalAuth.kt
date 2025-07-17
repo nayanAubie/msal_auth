@@ -26,6 +26,7 @@ import com.microsoft.identity.client.exception.MsalServiceException
 import com.microsoft.identity.client.exception.MsalUiRequiredException
 import com.microsoft.identity.client.exception.MsalUnsupportedBrokerException
 import com.microsoft.identity.client.exception.MsalUserCancelException
+import com.microsoft.identity.common.java.util.SchemaUtil
 import io.flutter.plugin.common.MethodChannel
 
 /**
@@ -130,7 +131,10 @@ class MsalAuth(internal val context: Context) {
     private fun getCurrentAccountMap(account: IAccount): Map<String, Any?> {
         return mutableMapOf<String, Any?>().apply {
             put("id", account.id)
-            put("username", account.username)
+            put(
+                "username",
+                if (account.username == SchemaUtil.MISSING_FROM_THE_TOKEN_RESPONSE) null else account.username
+            )
             put("name", account.claims?.get("name"))
         }
     }
