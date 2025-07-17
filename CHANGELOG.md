@@ -1,3 +1,8 @@
+## 3.2.5
+- Fixed an issue on `iOS` where the Authenticator app did not open when switching the broker to `Authenticator`.
+- Refactored error handling in **MSAL exceptions** to include correlation IDs and improve error detail mapping. iOS/MacOS now shows the proper exception message instead of `Operation couldn't be completed.`
+- `AuthenticationResult (Android)`: Fixed username value in account mapping. `username` value will be `null` instead of `Missing from token response` if not found.
+
 ## 3.2.4
 - Handle UI unavailable error in `acquireToken` method and adjust view controller retrieval logic. [#issue/101](https://github.com/nayanAubie/msal_auth/issues/101)
 - Add `authority` parameter support for `acquireToken` and `acquireTokenSilent` methods. [#issue/91](https://github.com/nayanAubie/msal_auth/issues/91)
