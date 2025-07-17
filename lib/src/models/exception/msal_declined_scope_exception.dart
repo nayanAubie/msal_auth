@@ -22,10 +22,11 @@ class MsalDeclinedScopeException extends MsalException {
     required this.grantedScopes,
     required this.declinedScopes,
     required super.message,
+    required super.correlationId,
   });
 
   @override
   String toString() {
-    return 'MsalDeclinedScopeException { grantedScopes: $grantedScopes, declinedScopes: $declinedScopes, message: $message }';
+    return 'MsalDeclinedScopeException { grantedScopes: $grantedScopes, declinedScopes: $declinedScopes, message: $message, correlationId: $correlationId }';
   }
 }
