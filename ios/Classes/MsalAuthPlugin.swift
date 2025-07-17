@@ -535,47 +535,49 @@ extension MsalAuthPlugin {
     fileprivate func setMsalError(
         error: NSError, result: @escaping FlutterResult
     ) {
-        var code: String!
-        var errorDetails: Any? = nil
+        var flutterErrorCode: String!
+        var errorMessage: Any?
+        var errorDetails = [String: Any]()
 
         if error.domain == MSALErrorDomain,
             let errorCode = MSALError(rawValue: error.code)
         {
+            errorMessage = error.userInfo[MSALErrorDescriptionKey]
+            errorDetails["correlationId"] = error.userInfo[MSALCorrelationIDKey]
+            
             switch errorCode {
             case .userCanceled:
-                code = "USER_CANCEL"
+                flutterErrorCode = "USER_CANCEL"
             case .serverDeclinedScopes:
-                code = "DECLINED_SCOPE"
-                var details = [String: Any]()
-                details["grantedScopes"] = error.userInfo[MSALGrantedScopesKey]
-                details["declinedScopes"] =
-                    error.userInfo[MSALDeclinedScopesKey]
-                errorDetails = details
+                flutterErrorCode = "DECLINED_SCOPE"
+                errorDetails["grantedScopes"] = error.userInfo[MSALGrantedScopesKey]
+                errorDetails["declinedScopes"] = error.userInfo[MSALDeclinedScopesKey]
             case .serverProtectionPoliciesRequired:
-                code = "PROTECTION_POLICY_REQUIRED"
+                flutterErrorCode = "PROTECTION_POLICY_REQUIRED"
             case .interactionRequired:
-                code = "UI_REQUIRED"
+                flutterErrorCode = "UI_REQUIRED"
+                errorDetails["oauthError"] = error.userInfo[MSALOAuthErrorKey]
+                errorDetails["oauthErrorDescription"] = error.userInfo[MSALOAuthSubErrorDescriptionKey]
             case .internal:
-                code = "INTERNAL_ERROR"
-                errorDetails = error.userInfo[MSALInternalErrorCodeKey]
+                flutterErrorCode = "INTERNAL_ERROR"
+                errorDetails["internalErrorCode"] = error.userInfo[MSALInternalErrorCodeKey]
             case .workplaceJoinRequired:
-                code = "WORKPLACE_JOIN_REQUIRED"
+                flutterErrorCode = "WORKPLACE_JOIN_REQUIRED"
             case .serverError:
-                code = "SERVER_ERROR"
+                flutterErrorCode = "SERVER_ERROR"
             case .insufficientDeviceStrength:
-                code = "INSUFFICIENT_DEVICE_STRENGTH"
+                flutterErrorCode = "INSUFFICIENT_DEVICE_STRENGTH"
             @unknown default:
-                code = "INTERNAL_ERROR"
-                errorDetails = "unknown"
+                break
             }
         } else {
-            code = "INTERNAL_ERROR"
-            errorDetails = error.domain
+            flutterErrorCode = error.domain
+            errorMessage = error.localizedDescription
         }
 
         result(
             FlutterError(
-                code: code, message: error.localizedDescription,
+                code: flutterErrorCode, message: errorMessage as? String,
                 details: errorDetails))
     }
 }

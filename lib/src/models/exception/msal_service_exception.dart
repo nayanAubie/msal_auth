@@ -33,16 +33,19 @@ class MsalServiceException extends MsalException {
   final String errorCode;
 
   /// The http status code for the request sent to the service.
+  /// When "java.net.SocketTimeoutException" is thrown, no status code
+  /// will be caught. Will use "0" instead.
   final int httpStatusCode;
 
   const MsalServiceException({
     required this.errorCode,
     required this.httpStatusCode,
     required super.message,
+    required super.correlationId,
   });
 
   @override
   String toString() {
-    return 'MsalServiceException { errorCode: $errorCode, httpStatusCode: $httpStatusCode, message: $message }';
+    return 'MsalServiceException { errorCode: $errorCode, httpStatusCode: $httpStatusCode, message: $message, correlationId: $correlationId }';
   }
 }

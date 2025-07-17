@@ -26,6 +26,7 @@ import com.microsoft.identity.client.exception.MsalServiceException
 import com.microsoft.identity.client.exception.MsalUiRequiredException
 import com.microsoft.identity.client.exception.MsalUnsupportedBrokerException
 import com.microsoft.identity.client.exception.MsalUserCancelException
+import com.microsoft.identity.common.java.util.SchemaUtil
 import io.flutter.plugin.common.MethodChannel
 
 /**
@@ -130,7 +131,10 @@ class MsalAuth(internal val context: Context) {
     private fun getCurrentAccountMap(account: IAccount): Map<String, Any?> {
         return mutableMapOf<String, Any?>().apply {
             put("id", account.id)
-            put("username", account.username)
+            put(
+                "username",
+                if (account.username == SchemaUtil.MISSING_FROM_THE_TOKEN_RESPONSE) null else account.username
+            )
             put("name", account.claims?.get("name"))
         }
     }
@@ -263,51 +267,71 @@ class MsalAuth(internal val context: Context) {
      * Common [MsalException] handling function that returns error to Dart.
      */
     internal fun setMsalException(exception: MsalException, result: MethodChannel.Result) {
-        lateinit var errorCode: String
-        var errorDetails: Any? = null
+        lateinit var flutterErrorCode: String
+        val errorDetails = mutableMapOf<String, Any?>().apply {
+            put("correlationId", exception.correlationId)
+        }
 
         when (exception) {
-            is MsalUserCancelException -> errorCode = "USER_CANCEL"
+            is MsalUserCancelException -> flutterErrorCode = "USER_CANCEL"
 
             is MsalDeclinedScopeException -> {
-                errorCode = "DECLINED_SCOPE"
-                errorDetails = mutableMapOf<String, Any>().apply {
+                flutterErrorCode = "DECLINED_SCOPE"
+                errorDetails.apply {
                     put("grantedScopes", exception.grantedScopes)
                     put("declinedScopes", exception.declinedScopes)
                 }
             }
 
-            is MsalIntuneAppProtectionPolicyRequiredException -> errorCode =
-                "PROTECTION_POLICY_REQUIRED"
+            is MsalIntuneAppProtectionPolicyRequiredException -> {
+                flutterErrorCode = "PROTECTION_POLICY_REQUIRED"
+                errorDetails.apply {
+                    put("accountUpn", exception.accountUpn)
+                    put("accountUserId", exception.accountUserId)
+                    put("tenantId", exception.tenantId)
+                    put("authorityUrl", exception.authorityUrl)
+                }
+            }
 
-            is MsalUiRequiredException -> errorCode = "UI_REQUIRED"
+            is MsalUiRequiredException -> {
+                flutterErrorCode = "UI_REQUIRED"
+                errorDetails.apply {
+                    put("oauthSubErrorCode", exception.oauthSubErrorCode)
+                }
+            }
 
             is MsalArgumentException -> {
-                errorCode = "INVALID_ARGUMENT"
-                errorDetails = mutableMapOf<String, Any>().apply {
-                    put("errorCode", exception.errorCode)
+                flutterErrorCode = "INVALID_ARGUMENT"
+                errorDetails.apply {
                     put("argumentName", exception.argumentName)
                     put("operationName", exception.operationName)
                 }
             }
 
             is MsalClientException -> {
-                errorCode = "CLIENT_ERROR"
-                errorDetails = exception.errorCode
+                flutterErrorCode = "CLIENT_ERROR"
+                errorDetails.apply {
+                    put("errorCode", exception.errorCode)
+                }
             }
 
             is MsalServiceException -> {
-                errorCode = "SERVICE_ERROR"
-                errorDetails = mutableMapOf<String, Any>().apply {
+                flutterErrorCode = "SERVICE_ERROR"
+                errorDetails.apply {
                     put("errorCode", exception.errorCode)
                     put("httpStatusCode", exception.httpStatusCode)
                 }
             }
 
-            is MsalUnsupportedBrokerException -> errorCode = "UNSUPPORTED_BROKER"
+            is MsalUnsupportedBrokerException -> {
+                flutterErrorCode = "UNSUPPORTED_BROKER"
+                errorDetails.apply {
+                    put("activeBrokerPackageName", exception.activeBrokerPackageName)
+                }
+            }
         }
 
-        result.error(errorCode, exception.localizedMessage, errorDetails)
+        result.error(flutterErrorCode, exception.localizedMessage, errorDetails)
     }
 }
 
