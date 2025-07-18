@@ -6,7 +6,7 @@ extension PlatformExceptionUtils on PlatformException {
   /// Converts the [PlatformException] to [MsalException]
   MsalException convertToMsalException() {
     final message = this.message ?? '';
-    final map = details is Map<String, dynamic> ? details : {};
+    final map = details is Map ? details : {};
     final correlationId = map['correlationId'] as String?;
 
     return switch (code) {
