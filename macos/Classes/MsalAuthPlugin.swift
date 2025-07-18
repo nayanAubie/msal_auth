@@ -125,9 +125,9 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
             guard let authorityUrl = URL(string: authority!) else {
                 result(
                     FlutterError(
-                        code: "INTERNAL_ERROR",
+                        code: "INVALID_AUTHORITY",
                         message: "invalid authority URL has been provided",
-                        details: "invalid_authority"))
+                        details: nil))
                 return
             }
 
@@ -189,8 +189,8 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
               let viewController = mainWindow.contentViewController else {
             result(
                 FlutterError(
-                    code: "INTERNAL_ERROR",
-                    message: "ViewController is not available to present the WebView",
+                    code: "UI_UNAVAILABLE",
+                    message: "Cannot present authentication UI. The view controller is not available.",
                     details: nil))
             return
         }
@@ -471,10 +471,10 @@ extension MsalAuthPlugin {
     ) {
         result(
             FlutterError(
-                code: "INTERNAL_ERROR",
+                code: "INVALID_DATA",
                 message:
                     "Invalid data has been provided on method \(methodName).",
-                details: "invalid_data"))
+                details: nil))
     }
 
     /// Sets public client application initialization error to result. This is a custom exception created at Dart side.
@@ -497,9 +497,9 @@ extension MsalAuthPlugin {
     fileprivate func setNoCurrentAccountError(result: @escaping FlutterResult) {
         result(
             FlutterError(
-                code: "INTERNAL_ERROR",
+                code: "NO_CURRENT_ACCOUNT",
                 message: "There is no currently signed in account.",
-                details: "no_account"))
+                details: nil))
     }
 
     /// Common MSAL error handling function that returns error to Dart.
