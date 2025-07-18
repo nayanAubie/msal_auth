@@ -1,3 +1,7 @@
+## 3.2.6
+- Fixed MSAL error conversion in `Dart` due to `nil` details received from iOS/MacOS.
+- Improved error codes in iOS/MacOS when a custom exception needs to be thrown.
+
 ## 3.2.5
 - Fixed an issue on `iOS` where the Authenticator app did not open when switching the broker to `Authenticator`.
 - Refactored error handling in **MSAL exceptions** to include correlation IDs and improve error detail mapping. iOS/MacOS now shows the proper exception message instead of `Operation couldn't be completed.`
