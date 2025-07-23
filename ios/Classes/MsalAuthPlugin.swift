@@ -30,7 +30,7 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
                 let clientId = dict["clientId"] as? String,
                 let broker = dict["broker"] as? String,
                 let authorityType: AuthorityType = {
-                    switch call.method {
+                    switch dict["authorityType"] as? String {
                     case "b2c": return .b2c
                     default: return .aad
                     }
