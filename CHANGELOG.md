@@ -1,3 +1,6 @@
+## 3.2.7
+- Fixed issue of `authorityType` value assignment in iOS/MacOS. [#issue/118](https://github.com/nayanAubie/msal_auth/issues/118)
+
 ## 3.2.6
 - Fixed MSAL error conversion in `Dart` due to `nil` details received from iOS/MacOS.
 - Improved error codes in iOS/MacOS when a custom exception needs to be thrown.
