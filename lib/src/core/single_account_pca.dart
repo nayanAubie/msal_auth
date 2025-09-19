@@ -40,6 +40,16 @@ class SingleAccountPca extends PublicClientApplication {
     }
   }
 
+
+  Future<bool> get isSharedDevice async {
+    try {
+      final result = await kMethodChannel.invokeMethod('isSharedDevice');
+      return result;
+    } on PlatformException catch (e) {
+      throw e.convertToMsalException();
+    }
+  }
+
   /// Signs out the current account and credentials (tokens).
   /// NOTE: If a device is marked as a shared device within broker,
   /// sign out will be device wide.

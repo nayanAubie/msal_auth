@@ -74,6 +74,8 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
 
             "currentAccount" -> getCurrentAccount(result)
 
+            "isSharedDevice" -> isSharedDevice(result)
+
             "signOut" -> signOut(result)
 
             "getAccount" -> {
@@ -241,6 +243,16 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
         }
 
         msal.iSingleAccountPca?.signOut(msal.signOutCallback(result))
+    }
+
+    private fun isSharedDevice(result: MethodChannel.Result) {
+        if (!msal.isPcaInitialized()) {
+            setPcaInitError("isSharedDevice", result)
+            return
+        }
+
+        val isShared = msal.iSingleAccountPca?.isSharedDevice
+        result.success(isShared)
     }
 
     /**
