@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 group = "com.example.msal_auth"
 version = "1.0-SNAPSHOT"
 
-val msalVersion = "5.7.+"
+val msalVersion = "8.3.+"
 
 buildscript {
     val kotlinVersion = "2.2.20"
@@ -65,5 +65,5 @@ android {
 
 dependencies {
     implementation("com.microsoft.identity.client:msal:${msalVersion}")
-    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("com.google.code.gson:gson:2.14.0")
 }
