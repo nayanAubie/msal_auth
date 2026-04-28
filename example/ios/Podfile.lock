@@ -22,9 +22,9 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/msal_auth/ios"
 
 SPEC CHECKSUMS:
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  MSAL: 551bfa97974d3f6a82f9f53312976b9fa5904a52
-  msal_auth: cb3f482e2f72e1181b1d476ff3a36c5ab560f29c
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  MSAL: 1b729b879b095da48e24e63a88de4ef4383f6489
+  msal_auth: 806b15178565ad2e5e15f1f9b003ff6ef964f6c1
 
 PODFILE CHECKSUM: 1959d098c91d8a792531a723c4a9d7e9f6a01e38
 
