@@ -22,9 +22,9 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/msal_auth/macos
 
 SPEC CHECKSUMS:
-  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  MSAL: 551bfa97974d3f6a82f9f53312976b9fa5904a52
-  msal_auth: 305174282f939e2f13e2051a908e704cc3e4d5b9
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  MSAL: 1b729b879b095da48e24e63a88de4ef4383f6489
+  msal_auth: c6c76164c9eeb7f081a87f7a0b297c14f5d11a80
 
 PODFILE CHECKSUM: 9ebaf0ce3d369aaa26a9ea0e159195ed94724cf3
 
