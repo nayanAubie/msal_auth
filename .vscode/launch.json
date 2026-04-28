@@ -11,7 +11,7 @@
             "program": "example/lib/main.dart",
             "args": [
                 "--dart-define-from-file",
-                ".env/development.env"
+                ".env"
             ]
         }
     ]
