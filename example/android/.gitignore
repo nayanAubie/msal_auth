@@ -13,3 +13,6 @@ key.properties
 secret.properties
 **/*.keystore
 **/*.jks
+
+# Other android specific files and folders
+.idea/*
