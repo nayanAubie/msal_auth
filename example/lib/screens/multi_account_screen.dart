@@ -84,24 +84,24 @@ class _MultiAccountScreenState extends State<MultiAccountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Multiple Account'),
+        title: const Text('Multiple Account'),
         actions: [
           IconButton(
             tooltip: 'Add another account',
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: _addNewAccount,
           ),
         ],
       ),
       body: () {
         if (_accounts == null) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else if (_accounts!.isEmpty) {
-          return Center(child: Text('No Accounts'));
+          return const Center(child: Text('No Accounts'));
         } else {
           return ListView.separated(
             itemCount: _accounts!.length,
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             itemBuilder: (context, index) => AccountCard(
               account: _accounts![index],
               action: PopupMenuButton<int>(
@@ -110,10 +110,8 @@ class _MultiAccountScreenState extends State<MultiAccountScreen> {
                   switch (value) {
                     case 0:
                       _acquireTokenSilent(identifier);
-                      break;
                     case 1:
                       _removeAccount(identifier);
-                      break;
                   }
                 },
                 itemBuilder: (context) {
@@ -126,7 +124,7 @@ class _MultiAccountScreenState extends State<MultiAccountScreen> {
                 },
               ),
             ),
-            separatorBuilder: (context, i) => SizedBox(height: 16),
+            separatorBuilder: (context, i) => const SizedBox(height: 16),
           );
         }
       }(),

@@ -19,15 +19,15 @@ class AccountCard extends StatelessWidget {
           Column(
             children: [
               ListTile(
-                title: Text('ID'),
+                title: const Text('ID'),
                 subtitle: Text(account.id),
               ),
               ListTile(
-                title: Text('Username'),
+                title: const Text('Username'),
                 subtitle: Text(account.username ?? 'N/A'),
               ),
               ListTile(
-                title: Text('Name'),
+                title: const Text('Name'),
                 subtitle: Text(account.name ?? 'N/A'),
               ),
             ],

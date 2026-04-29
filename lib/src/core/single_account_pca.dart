@@ -34,7 +34,7 @@ class SingleAccountPca extends PublicClientApplication {
   Future<Account> get currentAccount async {
     try {
       final result = await kMethodChannel.invokeMethod('currentAccount');
-      return Account.fromJson(result.cast<String, dynamic>());
+      return Account.fromJson((result as Map).cast<String, dynamic>());
     } on PlatformException catch (e) {
       throw e.convertToMsalException();
     }

@@ -51,7 +51,9 @@ class PublicClientApplication {
     try {
       final result =
           await kMethodChannel.invokeMethod('acquireToken', arguments);
-      return AuthenticationResult.fromJson(result.cast<String, dynamic>());
+      return AuthenticationResult.fromJson(
+        (result as Map).cast<String, dynamic>(),
+      );
     } on PlatformException catch (e) {
       throw e.convertToMsalException();
     }
@@ -91,7 +93,9 @@ class PublicClientApplication {
     try {
       final result =
           await kMethodChannel.invokeMethod('acquireTokenSilent', arguments);
-      return AuthenticationResult.fromJson(result.cast<String, dynamic>());
+      return AuthenticationResult.fromJson(
+        (result as Map).cast<String, dynamic>(),
+      );
     } on PlatformException catch (e) {
       throw e.convertToMsalException();
     }

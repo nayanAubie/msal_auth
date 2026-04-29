@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
       body: ListView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         children: [
           AbsorbPointer(
             absorbing: widget.addAccount,
@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           CustomDropdown<Prompt>(
             value: _selectedPrompt,
             items: Prompt.values,
@@ -111,21 +111,21 @@ class _LoginScreenState extends State<LoginScreen> {
               () => _selectedPrompt = value ?? Prompt.whenRequired,
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           TextFormField(
             controller: _loginHintController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Login hint',
               hintText: 'Login hint (Optional)',
             ),
           ),
           if (Platform.isIOS || Platform.isMacOS) ...[
-            SizedBox(height: 24),
-            Text(
+            const SizedBox(height: 24),
+            const Text(
               'Apple Specific',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             CustomDropdown<AuthorityType>(
               value: _selectedAuthorityType,
               items: AuthorityType.values,
@@ -135,12 +135,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             if (_selectedAuthorityType == AuthorityType.b2c)
-              Text(
+              const Text(
                 'Set your b2c authority URL in the "AAD_APPLE_AUTHORITY" variable of environment.',
                 style: TextStyle(fontSize: 12),
               ),
             if (Platform.isIOS) ...[
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               CustomDropdown<Broker>(
                 value: _selectedBroker,
                 items: Broker.values,
@@ -151,12 +151,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ],
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _login,
             child: const Text('Acquire Token (Login)'),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
         ],
       ),
     );

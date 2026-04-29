@@ -6,15 +6,16 @@ extension PlatformExceptionUtils on PlatformException {
   /// Converts the [PlatformException] to [MsalException]
   MsalException convertToMsalException() {
     final message = this.message ?? '';
-    final map = details is Map ? details : {};
+    final map = details is Map ? (details as Map).cast<String, dynamic>() : {};
     final correlationId = map['correlationId'] as String?;
 
     return switch (code) {
       'USER_CANCEL' =>
         MsalUserCancelException(message: message, correlationId: correlationId),
       'DECLINED_SCOPE' => MsalDeclinedScopeException(
-          grantedScopes: map['grantedScopes'].cast<String>(),
-          declinedScopes: map['declinedScopes'].cast<String>(),
+          grantedScopes: (map['grantedScopes'] as List<dynamic>).cast<String>(),
+          declinedScopes:
+              (map['declinedScopes'] as List<dynamic>).cast<String>(),
           message: message,
           correlationId: correlationId,
         ),

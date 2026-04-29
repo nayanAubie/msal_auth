@@ -59,9 +59,10 @@ final class AuthenticationResult {
       idToken: json['idToken'],
       authority: json['authority'],
       tenantId: json['tenantId'],
-      scopes: json['scopes'].cast<String>(),
+      scopes: (json['scopes'] as List).cast<String>(),
       correlationId: json['correlationId'],
-      account: Account.fromJson(json['account'].cast<String, dynamic>()),
+      account:
+          Account.fromJson((json['account'] as Map).cast<String, dynamic>()),
     );
   }
 

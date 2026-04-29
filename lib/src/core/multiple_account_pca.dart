@@ -35,7 +35,7 @@ class MultipleAccountPca extends PublicClientApplication {
     try {
       final result =
           await kMethodChannel.invokeMethod('getAccount', identifier);
-      return Account.fromJson(result.cast<String, dynamic>());
+      return Account.fromJson((result as Map).cast<String, dynamic>());
     } on PlatformException catch (e) {
       throw e.convertToMsalException();
     }
@@ -47,7 +47,10 @@ class MultipleAccountPca extends PublicClientApplication {
     try {
       final result = await kMethodChannel.invokeMethod('getAccounts') as List;
       return result
-          .map((account) => Account.fromJson(account.cast<String, dynamic>()))
+          .map(
+            (account) =>
+                Account.fromJson((account as Map).cast<String, dynamic>()),
+          )
           .toList();
     } on PlatformException catch (e) {
       throw e.convertToMsalException();
