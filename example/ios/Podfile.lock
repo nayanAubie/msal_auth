@@ -1,11 +1,11 @@
 PODS:
   - Flutter (1.0.0)
-  - MSAL (2.2.0):
-    - MSAL/app-lib (= 2.2.0)
-  - MSAL/app-lib (2.2.0)
+  - MSAL (2.11.0):
+    - MSAL/app-lib (= 2.11.0)
+  - MSAL/app-lib (2.11.0)
   - msal_auth (2.0.2):
     - Flutter
-    - MSAL (~> 2.2.0)
+    - MSAL (~> 2.11.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -23,8 +23,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  MSAL: 1b729b879b095da48e24e63a88de4ef4383f6489
-  msal_auth: 806b15178565ad2e5e15f1f9b003ff6ef964f6c1
+  MSAL: 47df23ea9a9c6df9e09e9ba2aa2a7539c7030b6b
+  msal_auth: 337d7df6d6196e425f8ed1a4d950633f346db058
 
 PODFILE CHECKSUM: 1959d098c91d8a792531a723c4a9d7e9f6a01e38
 
