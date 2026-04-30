@@ -182,6 +182,13 @@ final class MsalAuthService {
       return (false, e);
     }
   }
+
+  /// Device mode configured by administrator is shared or not.
+  Future<bool?> isSharedDevice() async {
+    final isSharedDevice = await publicClientApplication?.isSharedDevice();
+    log('isSharedDevice => $isSharedDevice');
+    return isSharedDevice;
+  }
 }
 
 /// Declare this enum if your app needs both account mode.

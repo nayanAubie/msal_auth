@@ -76,6 +76,10 @@ class _SingleAccountScreenState extends State<SingleAccountScreen> {
     }
   }
 
+  Future<void> _isSharedDevice() async {
+    await MsalAuthService.instance.isSharedDevice();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,6 +102,11 @@ class _SingleAccountScreenState extends State<SingleAccountScreen> {
                 ElevatedButton(
                   onPressed: _acquireTokenSilent,
                   child: const Text('Acquire Token Silently'),
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: _isSharedDevice,
+                  child: const Text('Shared Device Mode'),
                 ),
               ],
             ),

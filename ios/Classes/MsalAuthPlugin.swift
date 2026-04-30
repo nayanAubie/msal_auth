@@ -143,6 +143,8 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin, FlutterSceneLifeCycleDeleg
                 return
             }
             removeAccount(identifier: identifier, result: result)
+            
+        case "isSharedDevice": isSharedDevice(result: result)
 
         default: result(FlutterMethodNotImplemented)
         }
@@ -479,6 +481,17 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin, FlutterSceneLifeCycleDeleg
             result(true)
         } catch let error as NSError {
             setMsalError(error: error, result: result)
+        }
+    }
+    
+    private func isSharedDevice(result: @escaping FlutterResult) {
+        guard let pca = MsalAuth.publicClientApplication else {
+            setPcaInitError(methodName: "isSharedDevice", result: result)
+            return
+        }
+        
+        pca.getDeviceInformation(with: nil) { deviceInformation, _ in
+            result(deviceInformation?.deviceMode == .shared)
         }
     }
 }

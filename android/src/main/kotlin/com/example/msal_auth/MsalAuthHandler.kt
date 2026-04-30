@@ -88,6 +88,8 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
                 Thread { removeAccount(identifier, result) }.start()
             }
 
+            "isSharedDevice" -> isSharedDevice(result)
+
             else -> result.notImplemented()
         }
     }
@@ -286,6 +288,20 @@ class MsalAuthHandler(private val msal: MsalAuth) : MethodChannel.MethodCallHand
 
         val account = msal.iMultipleAccountPca?.getAccount(identifier)
         msal.iMultipleAccountPca?.removeAccount(account, msal.removeAccountCallback(result))
+    }
+
+    /**
+     * Check if the device is shared.
+     *
+     * @param result the result of the method call.
+     */
+    private fun isSharedDevice(result: MethodChannel.Result) {
+        if (!msal.isPcaInitialized()) {
+            setPcaInitError("isSharedDevice", result)
+            return
+        }
+
+        result.success(msal.iPublicClientApplication.isSharedDevice)
     }
 
     /**

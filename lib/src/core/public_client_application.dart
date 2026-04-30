@@ -100,4 +100,16 @@ class PublicClientApplication {
       throw e.convertToMsalException();
     }
   }
+
+  /// Returns whether the application is being run on a device that is marked as
+  /// a shared by administrator.
+  /// Only `SingleAccountPublicClientApplications` may be used on shared devices.
+  Future<bool> isSharedDevice() async {
+    try {
+      final result = await kMethodChannel.invokeMethod<bool>('isSharedDevice');
+      return result ?? false;
+    } on PlatformException catch (e) {
+      throw e.convertToMsalException();
+    }
+  }
 }
