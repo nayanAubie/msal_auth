@@ -13,8 +13,24 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin, FlutterSceneLifeCycleDeleg
         let instance = MsalAuthPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
 
+        // Register AppDelegate to handle URL callback.
+        registrar.addApplicationDelegate(instance)
+
         // Register SceneDelegate to handle URL callback.
         registrar.addSceneDelegate(instance)
+    }
+
+    /// Handles the URL callback from the browser / third party app.
+    /// Used when iOS app uses `AppDelegate`.
+    public func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+    ) -> Bool {
+        return MSALPublicClientApplication.handleMSALResponse(
+            url,
+            sourceApplication: options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String
+        )
     }
 
     /// Handles the URL callback from the browser / third party app.
