@@ -29,3 +29,5 @@
 -dontwarn org.bouncycastle.openssl.PEMKeyPair
 -dontwarn org.bouncycastle.openssl.PEMParser
 -dontwarn org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
+
+-dontwarn com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
