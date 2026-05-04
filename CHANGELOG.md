@@ -1,3 +1,6 @@
+## 3.4.1
+- Fixed an Android release build issue caused by missing ProGuard rule mappings in the Android library.
+
 ## 3.4.0
 - Updated native MSAL SDK versions: Android: `8.3.+` and iOS & macOS: `2.11.0`
 - Migrated Android build scripts from Groovy to Kotlin DSL.
