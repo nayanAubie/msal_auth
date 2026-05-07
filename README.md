@@ -6,9 +6,23 @@ Microsoft Authentication 🔐 Library for Flutter.
 
 ## Platform Support
 
-| Android | iOS     | macOS   |
-|---------|---------|---------|
-| SDK 21+ | 14+     | 10.15+  |
+| Android |
+| ------- |
+| SDK 21+ |
+
+### CocoaPods
+
+| iOS | macOS  |
+| --- | ------ |
+| 14+ | 10.15+ |
+
+### Swift Package Manager (SPM)
+
+| iOS | macOS |
+| --- | ----- |
+| 16+ | 11+   |
+
+> **Note:** The `iOS` and `macOS` minimum version differences between `CocoaPods` and `SPM` are requirements of the [MSAL native Swift library], not this Flutter plugin.
 
 ## Features 🚀
 
@@ -235,7 +249,7 @@ You don't need to include any rules for `MSAL Android` library as this is done u
 
 ### Handle `callback` from MSAL
 
-> Applicable only when using version `3.3.0 `or earlier. Starting from version `3.4.0`, callback handling is managed internally by the plugin, so no additional setup is required on the app side.
+> Applicable only when using version `3.3.0` or earlier. Starting from version `3.4.0`, callback handling is managed internally by the plugin, so no additional setup is required on the app side.
 
 - Your app needs to handle login success callback if app uses [Microsoft Authenticator] app OR `Safari Browser` for authentication. `WebView` does not require it.
 - Your app needs to handle the **login success callback** if it uses the [Microsoft Authenticator] app or `Safari Browser` for authentication. `WebView` does not require this callback.
@@ -427,6 +441,7 @@ See the [`example README`] for detailed setup instructions.
 [Configure iOS/macOS authority]: https://learn.microsoft.com/en-us/entra/msal/objc/configure-authority#change-the-default-authority
 [MSAL exceptions - Android]: https://learn.microsoft.com/en-us/entra/identity-platform/msal-android-handling-exceptions
 [MSAL exceptions - iOS/macOS]: https://learn.microsoft.com/en-us/entra/msal/objc/error-handling-ios
+[MSAL native Swift library]: https://github.com/AzureAD/microsoft-authentication-library-for-objc
 [`example`]: example
 [`example README`]: example/README.md
 [`consumer-rules.pro`]: android/consumer-rules.pro
