@@ -168,8 +168,15 @@ class MsalAuth(internal val context: Context) {
      * Callback for getting the current account.
      */
     internal fun currentAccountCallback(result: MethodChannel.Result): CurrentAccountCallback {
+        // MSAL may invoke multiple callbacks (`onAccountLoaded` and `onAccountChanged`) when logged-in user clears
+        // the app storage and trys to call `getCurrentAccount` method directly after opening the app. #issue/116
+        var replied = false
+
         return object : CurrentAccountCallback {
             override fun onAccountLoaded(activeAccount: IAccount?) {
+                if (replied) return
+                replied = true
+
                 if (activeAccount == null) {
                     setNoCurrentAccountException(result)
                     return
@@ -178,6 +185,9 @@ class MsalAuth(internal val context: Context) {
             }
 
             override fun onAccountChanged(priorAccount: IAccount?, currentAccount: IAccount?) {
+                if (replied) return
+                replied = true
+
                 if (currentAccount == null) {
                     setNoCurrentAccountException(result)
                     return
@@ -186,6 +196,9 @@ class MsalAuth(internal val context: Context) {
             }
 
             override fun onError(exception: MsalException) {
+                if (replied) return
+                replied = true
+
                 setMsalException(exception, result)
             }
         }
