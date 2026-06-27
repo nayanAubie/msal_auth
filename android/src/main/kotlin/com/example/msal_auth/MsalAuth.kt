@@ -169,7 +169,7 @@ class MsalAuth(internal val context: Context) {
      */
     internal fun currentAccountCallback(result: MethodChannel.Result): CurrentAccountCallback {
         // MSAL may invoke multiple callbacks (`onAccountLoaded` and `onAccountChanged`) when logged-in user clears
-        // the app storage and trys to call `getCurrentAccount` method directly after opening the app. #issue/116
+        // the app storage and try to call `getCurrentAccount` method directly after opening the app. #issue/116
         var replied = false
 
         return object : CurrentAccountCallback {
@@ -268,11 +268,11 @@ class MsalAuth(internal val context: Context) {
      * Sets no current account exception.
      */
     internal fun setNoCurrentAccountException(result: MethodChannel.Result) {
-        setMsalException(
-            MsalClientException(
-                MsalClientException.NO_CURRENT_ACCOUNT,
-                MsalClientException.NO_CURRENT_ACCOUNT_ERROR_MESSAGE
-            ), result
+        // Send the exception "NO_CURRENT_ACCOUNT" directly to Flutter
+        result.error(
+            MsalClientException.NO_CURRENT_ACCOUNT.uppercase(),
+            MsalClientException.NO_CURRENT_ACCOUNT_ERROR_MESSAGE,
+            null
         )
     }
 

@@ -3,6 +3,7 @@ part 'msal_client_exception.dart';
 part 'msal_declined_scope_exception.dart';
 part 'msal_insufficient_device_strength_exception.dart';
 part 'msal_internal_exception.dart';
+part 'msal_no_current_account_exception.dart';
 part 'msal_pca_init_exception.dart';
 part 'msal_protection_policy_required_exception.dart';
 part 'msal_server_exception.dart';
