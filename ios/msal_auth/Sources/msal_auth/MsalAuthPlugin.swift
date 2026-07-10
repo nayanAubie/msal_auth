@@ -75,11 +75,13 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin, FlutterSceneLifeCycleDeleg
             MsalAuth.broker = broker
             MsalAuth.authorityType = authorityType
             let authority = dict["authority"] as? String
+            let redirectUri = dict["redirectUri"] as? String
 
             createPublicClientApplication(
                 pcaType: pcaType,
                 clientId: clientId, authority: authority,
                 authorityType: authorityType,
+                redirectUri: redirectUri,
                 result: result)
         case "acquireToken":
             guard let dict = call.arguments as? NSDictionary,
@@ -156,11 +158,13 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin, FlutterSceneLifeCycleDeleg
     ///   - clientId: Client ID from Azure Portal.
     ///   - authority: Authority URL.
     ///   - authorityType: Authority type.
+    ///   - redirectUri: Redirect URI. When nil, MSAL derives the default.
     ///   - result: Result of the method call.
     private func createPublicClientApplication(
         pcaType: PublicClientApplicationType,
         clientId: String, authority: String?,
         authorityType: AuthorityType,
+        redirectUri: String?,
         result: @escaping FlutterResult
     ) {
         // Sets broker availability. this is required to avoid error on PCA creation
@@ -189,20 +193,21 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin, FlutterSceneLifeCycleDeleg
                 case .b2c:
                     let b2cAuthority = try MSALB2CAuthority(url: authorityUrl)
                     pcaConfig = MSALPublicClientApplicationConfig(
-                        clientId: clientId, redirectUri: nil,
+                        clientId: clientId, redirectUri: redirectUri,
                         authority: b2cAuthority)
                     pcaConfig.knownAuthorities = [b2cAuthority]
                 default:
                     let defaultAuthority = try MSALAuthority(url: authorityUrl)
                     pcaConfig = MSALPublicClientApplicationConfig(
-                        clientId: clientId, redirectUri: nil,
+                        clientId: clientId, redirectUri: redirectUri,
                         authority: defaultAuthority)
                 }
             } catch let error as NSError {
                 setMsalError(error: error, result: result)
             }
         } else {
-            pcaConfig = MSALPublicClientApplicationConfig(clientId: clientId)
+            pcaConfig = MSALPublicClientApplicationConfig(
+                clientId: clientId, redirectUri: redirectUri, authority: nil)
         }
 
         if let application = try? MSALPublicClientApplication(

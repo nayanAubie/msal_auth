@@ -36,11 +36,15 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
 
             MsalAuth.authorityType = authorityType
             let authority = dict["authority"] as? String
+            let redirectUri = dict["redirectUri"] as? String
+            let broker = dict["broker"] as? String
 
             createPublicClientApplication(
                 pcaType: pcaType,
                 clientId: clientId, authority: authority,
                 authorityType: authorityType,
+                redirectUri: redirectUri,
+                broker: broker,
                 result: result)
         case "acquireToken":
             guard let dict = call.arguments as? NSDictionary,
@@ -115,13 +119,29 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
     ///   - clientId: Client ID from Azure Portal.
     ///   - authority: Authority URL.
     ///   - authorityType: Authority type.
+    ///   - redirectUri: Redirect URI. When nil, MSAL derives the default.
+    ///   - broker: Broker used for authentication. Disabling it routes auth
+    ///     through the web view instead of the Microsoft SSO extension.
     ///   - result: Result of the method call.
     private func createPublicClientApplication(
         pcaType: PublicClientApplicationType,
         clientId: String, authority: String?,
         authorityType: AuthorityType,
+        redirectUri: String?,
+        broker: String?,
         result: @escaping FlutterResult
     ) {
+        // Sets broker availability. Disabling the broker (webView/safariBrowser)
+        // routes auth through the web view instead of the Microsoft SSO extension,
+        // which is required on managed Macs where the broker cannot resolve the
+        // app's Team ID.
+        switch broker {
+        case "webView", "safariBrowser":
+            MSALGlobalConfig.brokerAvailability = .none
+        default:
+            MSALGlobalConfig.brokerAvailability = .auto
+        }
+
         var pcaConfig: MSALPublicClientApplicationConfig!
 
         if authority != nil {
@@ -139,20 +159,21 @@ public class MsalAuthPlugin: NSObject, FlutterPlugin {
                 case .b2c:
                     let b2cAuthority = try MSALB2CAuthority(url: authorityUrl)
                     pcaConfig = MSALPublicClientApplicationConfig(
-                        clientId: clientId, redirectUri: nil,
+                        clientId: clientId, redirectUri: redirectUri,
                         authority: b2cAuthority)
                     pcaConfig.knownAuthorities = [b2cAuthority]
                 default:
                     let defaultAuthority = try MSALAuthority(url: authorityUrl)
                     pcaConfig = MSALPublicClientApplicationConfig(
-                        clientId: clientId, redirectUri: nil,
+                        clientId: clientId, redirectUri: redirectUri,
                         authority: defaultAuthority)
                 }
             } catch let error as NSError {
                 setMsalError(error: error, result: result)
             }
         } else {
-            pcaConfig = MSALPublicClientApplicationConfig(clientId: clientId)
+            pcaConfig = MSALPublicClientApplicationConfig(
+                clientId: clientId, redirectUri: redirectUri, authority: nil)
         }
 
         if let application = try? MSALPublicClientApplication(

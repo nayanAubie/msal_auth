@@ -1,3 +1,7 @@
+## Unreleased
+- Added optional `redirectUri` to `AppleConfig` for iOS and macOS. When set, MSAL uses it directly instead of deriving the default `msauth.<bundle-id>` redirect and resolving the Apple Team ID via keychain — which fails on some managed devices with "teamId is missing". Mirrors `AndroidConfig.redirectUri`; omitting it preserves existing behavior. [#issue/145](https://github.com/nayanAubie/msal_auth/issues/145)
+- Honor `AppleConfig.broker` on macOS (previously read only on iOS). Setting `broker` to `webView` / `safariBrowser` now disables the Microsoft SSO extension on macOS and routes auth through the web view, which is required on managed Macs where the broker cannot resolve the app's Team ID. Default (`msAuthenticator`) behavior is unchanged. [#issue/145](https://github.com/nayanAubie/msal_auth/issues/145)
+
 ## 3.5.1
 - Fixed issue of `IllegalStateException: Reply already submitted` crash due to multiple account callback from Android to Dart. [#issue/116](https://github.com/nayanAubie/msal_auth/issues/116)
 - Added `MsalNoCurrentAccountException` in Dart to handle absence of signed-in account. [#issue/141](https://github.com/nayanAubie/msal_auth/issues/141)

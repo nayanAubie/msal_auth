@@ -9,13 +9,26 @@ final class AppleConfig {
   final AuthorityType authorityType;
 
   /// Authentication middleware that is used to perform authentication.
-  /// Only used for iOS platform.
+  /// Used on both iOS and macOS. Disabling the broker (`webView` /
+  /// `safariBrowser`) routes auth through the web view instead of the
+  /// Microsoft SSO extension, which is required on managed Macs where the
+  /// broker cannot resolve the app's Team ID.
   final Broker broker;
+
+  /// Redirect URI registered for this app in the Azure portal
+  /// (Authentication → Mobile and desktop, e.g.
+  /// `msauth.<team-id>.<bundle-id>://auth`). When provided, MSAL uses this
+  /// URI directly instead of deriving the default `msauth.<bundle-id>`
+  /// redirect and resolving the Apple Team ID via keychain — which fails on
+  /// some managed devices with "teamId is missing". Optional; when null,
+  /// upstream default-derivation behavior is preserved.
+  final String? redirectUri;
 
   AppleConfig({
     this.authority,
     this.authorityType = AuthorityType.aad,
     this.broker = Broker.msAuthenticator,
+    this.redirectUri,
   });
 }
 
