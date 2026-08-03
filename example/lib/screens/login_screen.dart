@@ -139,17 +139,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 'Set your b2c authority URL in the "AAD_APPLE_AUTHORITY" variable of environment.',
                 style: TextStyle(fontSize: 12),
               ),
-            if (Platform.isIOS) ...[
-              const SizedBox(height: 16),
-              CustomDropdown<Broker>(
-                value: _selectedBroker,
-                items: Broker.values,
-                label: 'Broker',
-                onChanged: (value) => setState(
-                  () => _selectedBroker = value ?? Broker.msAuthenticator,
-                ),
+            const SizedBox(height: 16),
+            CustomDropdown<Broker>(
+              value: _selectedBroker,
+              items: Broker.values,
+              label: 'Broker',
+              onChanged: (value) => setState(
+                () => _selectedBroker = value ?? Broker.msAuthenticator,
               ),
-            ],
+            ),
           ],
           const SizedBox(height: 16),
           ElevatedButton(
