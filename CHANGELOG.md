@@ -1,6 +1,5 @@
 ## Unreleased
-- Updated the minimum supported SDK version to Flutter 3.44 / Dart 3.12.
-- Migrated the Android build to built-in Kotlin: the plugin no longer applies the Kotlin Gradle Plugin (KGP) itself, which removes the `plugins that apply Kotlin Gradle Plugin` warning printed since Flutter 3.44 and keeps the plugin building once Flutter drops its KGP compatibility shim. [#issue/147](https://github.com/nayanAubie/msal_auth/issues/147)
+- Migrated the Android build to built-in Kotlin (AGP 9): the plugin no longer applies the Kotlin Gradle Plugin (KGP) on AGP 9 and later, which removes the `plugins that apply Kotlin Gradle Plugin` warning printed since Flutter 3.44 and keeps the plugin building once Flutter drops its KGP compatibility shim. [#issue/147](https://github.com/nayanAubie/msal_auth/issues/147)
 
 ## 3.5.2
 - Added optional `redirectUri` in `AppleConfig` for iOS/MacOS. When provided, MSAL uses it directly instead of deriving the default `msauth.<bundle-id>` redirect, which fails with `teamId is missing` on some managed devices. Keeping it `null` preserves the existing behaviour. [#issue/145](https://github.com/nayanAubie/msal_auth/issues/145)
