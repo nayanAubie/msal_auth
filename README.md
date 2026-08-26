@@ -14,7 +14,7 @@ Microsoft Authentication 🔐 Library for Flutter.
 
 | iOS | macOS  |
 | --- | ------ |
-| 14+ | 10.15+ |
+| 16+ | 11+    |
 
 ### Swift Package Manager (SPM)
 
@@ -22,7 +22,7 @@ Microsoft Authentication 🔐 Library for Flutter.
 | --- | ----- |
 | 16+ | 11+   |
 
-> **Note:** The `iOS` and `macOS` minimum version differences between `CocoaPods` and `SPM` are requirements of the [MSAL native Swift library], not this Flutter plugin.
+> **Note** The minimum `iOS` and `macOS` versions may differ between CocoaPods and Swift Package Manager (SPM), as these requirements are determined by the [MSAL native Swift library] and are not requirements of this Flutter plugin.
 
 ## Features 🚀
 
