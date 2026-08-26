@@ -1,6 +1,9 @@
 ## Unreleased
 - Migrated the Android build to built-in Kotlin (AGP 9): the plugin no longer applies the Kotlin Gradle Plugin (KGP) on AGP 9 and later, which removes the `plugins that apply Kotlin Gradle Plugin` warning printed since Flutter 3.44 and keeps the plugin building once Flutter drops its KGP compatibility shim. [#issue/147](https://github.com/nayanAubie/msal_auth/issues/147)
 
+## 3.5.3
+- Pin the Swift MSAL library to `2.14.1` and prevent updates beyond this version to avoid native min deployment target breaking changes. [#issue/151](https://github.com/nayanAubie/msal_auth/issues/151)
+
 ## 3.5.2
 - Added optional `redirectUri` in `AppleConfig` for iOS/MacOS. When provided, MSAL uses it directly instead of deriving the default `msauth.<bundle-id>` redirect, which fails with `teamId is missing` on some managed devices. Keeping it `null` preserves the existing behaviour. [#issue/145](https://github.com/nayanAubie/msal_auth/issues/145)
 - `AppleConfig.broker` is now applied on MacOS as well (earlier it was iOS only). Setting it to `webView` / `safariBrowser` disables the Microsoft SSO extension and routes authentication through the web view. [#issue/145](https://github.com/nayanAubie/msal_auth/issues/145)

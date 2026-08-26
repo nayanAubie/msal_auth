@@ -12,15 +12,17 @@ let package = Package(
         .library(name: "msal-auth", targets: ["msal_auth"])
     ],
     dependencies: [
+        .package(name: "FlutterFramework", path: "../FlutterFramework"),
         .package(
             url: "https://github.com/AzureAD/microsoft-authentication-library-for-objc",
-            from: "2.11.0"
+            "2.11.0"..<"2.15.0"
         )
     ],
     targets: [
         .target(
             name: "msal_auth",
             dependencies: [
+                .product(name: "FlutterFramework", package: "FlutterFramework"),
                 .product(name: "MSAL", package: "microsoft-authentication-library-for-objc")
             ],
             resources: []
