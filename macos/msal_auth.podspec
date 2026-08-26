@@ -16,8 +16,8 @@ A new Flutter plugin for Azure AD authentication.
   s.source           = { :path => '.' }
   s.source_files = 'msal_auth/Sources/msal_auth/**/*'
   s.dependency 'FlutterMacOS'
-  s.platform = :osx, '10.15'
-  s.dependency 'MSAL', '~> 2.11.0'
+  s.platform = :osx, '11.0'
+  s.dependency 'MSAL', '~> 2.14.1'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.swift_version = '5.0'
