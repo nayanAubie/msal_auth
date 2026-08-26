@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 group = "com.example.msal_auth"
 version = "1.0-SNAPSHOT"
@@ -33,15 +32,6 @@ plugins {
     id("com.android.library")
 }
 
-// AGP 9 compiles Kotlin itself (built-in Kotlin) and no longer supports a
-// plugin project applying the Kotlin Gradle Plugin, so only apply it on
-// AGP 8 and earlier, where it is still required.
-val agpMajor = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.substringBefore('.').toInt()
-
-if (agpMajor < 9) {
-    apply(plugin = "org.jetbrains.kotlin.android")
-}
-
 android {
     namespace = "com.example.msal_auth"
 
@@ -67,7 +57,7 @@ android {
     }
 }
 
-project.extensions.configure(KotlinAndroidProjectExtension::class.java) {
+kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_17
     }
